@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>팔팔청과 — 결제안내</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --green: #2d6a4f;
+    --green-light: #52b788;
+    --green-pale: #d8f3dc;
+    --accent: #f77f00;
+    --bg: #f8f9fa;
+    --white: #ffffff;
+    --gray1: #212529;
+    --gray2: #495057;
+    --gray3: #868e96;
+    --gray4: #dee2e6;
+    --gray5: #f1f3f5;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--gray1);
+    min-height: 100vh;
+    padding-bottom: 32px;
+  }
+
+  .header {
+    background: var(--green);
+    color: white;
+    padding: 20px 20px 16px;
+    box-shadow: 0 2px 12px rgba(45,106,79,0.3);
+  }
+  .store-name { font-size: 20px; font-weight: 900; }
+  .store-name span { color: #a7f3c0; }
+  .header-sub { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+
+  /* Capture area */
+  #captureArea {
+    margin: 16px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .receipt-header {
+    background: var(--green-pale);
+    padding: 16px;
+    border-bottom: 1px solid #b7e4c7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .receipt-title { font-size: 15px; font-weight: 700; color: var(--green); }
+  .receipt-date { font-size: 12px; color: var(--gray3); }
+
+  /* Order summary table */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .summary-table thead th {
+    background: var(--gray5);
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gray3);
+  }
+  .summary-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--gray5);
+    vertical-align: middle;
+  }
+  .summary-table tbody tr:last-child td { border-bottom: none; }
+  .item-name { font-weight: 600; color: var(--gray1); }
+  .item-unit { font-size: 11px; color: var(--gray3); margin-top: 2px; }
+  .text-right { text-align: right; }
+  .subtotal-cell { font-weight: 700; color: var(--gray1); }
+
+  .total-row {
+    background: var(--green);
+    color: white;
+  }
+  .total-row td { padding: 12px; }
+  .total-label { font-size: 13px; font-weight: 700; }
+  .total-amount { font-size: 18px; font-weight: 900; text-align: right; letter-spacing: -1px; }
+
+  /* Customer info */
+  .info-block {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--gray5);
+  }
+  .info-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .info-row:last-child { margin-bottom: 0; }
+  .info-key { color: var(--gray3); min-width: 52px; font-size: 12px; }
+  .info-val { color: var(--gray1); font-weight: 600; }
+
+  /* Payment guide */
+  .payment-guide {
+    padding: 16px;
+  }
+  .guide-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray2);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .guide-box {
+    background: var(--gray5);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .guide-box p {
+    font-size: 13px;
+    color: var(--gray2);
+    line-height: 1.7;
+    margin-bottom: 4px;
+  }
+  .guide-box p:last-child { margin-bottom: 0; }
+  .guide-box .account {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--green);
+    margin: 6px 0;
+  }
+  .guide-box .amount {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--accent);
+    margin-top: 8px;
+  }
+  .step-list { list-style: none; padding: 0; }
+  .step-list li {
+    font-size: 13px;
+    color: var(--gray2);
+    padding: 3px 0;
+    line-height: 1.6;
+    display: flex;
+    gap: 8px;
+  }
+  .step-num-badge {
+    background: var(--green);
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Action buttons */
+  .action-btns {
+    margin: 0 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .action-btn {
+    padding: 13px 6px;
+    border-radius: 10px;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+  }
+  .action-btn:active { transform: scale(0.96); }
+  .btn-save { background: #e3f2fd; color: #1565c0; }
+  .btn-kakao { background: #FEE500; color: #1a1a1a; }
+  .btn-print { background: var(--gray5); color: var(--gray2); }
+  .btn-icon { font-size: 20px; }
+
+  .back-btn {
+    display: block;
+    margin: 14px 16px 0;
+    padding: 14px;
+    background: white;
+    border: 1.5px solid var(--gray4);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--gray2);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .back-btn:active { background: var(--gray5); }
+
+  .complete-badge {
+    margin: 16px 16px 0;
+    background: var(--green-pale);
+    border: 1.5px solid #b7e4c7;
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .complete-badge-icon { font-size: 22px; }
+  .complete-badge-text { font-size: 13px; font-weight: 600; color: var(--green); line-height: 1.5; }
+  .complete-badge-sub { font-size: 11px; color: var(--gray3); font-weight: 400; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="store-name">팔팔<span>청과</span></div>
+  <div class="header-sub">결제 안내</div>
+</div>
+
+<!-- 주문 완료 배지 -->
+<div class="complete-badge">
+  <div class="complete-badge-icon">✅</div>
+  <div>
+    <div class="complete-badge-text">주문이 접수되었습니다</div>
+    <div class="complete-badge-sub">아래 결제 안내에 따라 결제를 완료해 주세요</div>
+  </div>
+</div>
+
+<!-- 저장/공유 버튼 -->
+<div class="action-btns" style="margin-top:14px">
+  <button class="action-btn btn-save" onclick="saveImage()">
+    <span class="btn-icon">📥</span>이미지 저장
+  </button>
+  <button class="action-btn btn-kakao" onclick="shareKakao()">
+    <span class="btn-icon">💬</span>카카오 공유
+  </button>
+  <button class="action-btn btn-print" onclick="printPage()">
+    <span class="btn-icon">🖨️</span>인쇄하기
+  </button>
+</div>
+
+<!-- 캡처 영역 -->
+<div id="captureArea">
+  <div class="receipt-header">
+    <div class="receipt-title">📋 주문 내역</div>
+    <div class="receipt-date" id="receiptDate"></div>
+  </div>
+
+  <!-- 주문 품목 표 -->
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>품목</th>
+        <th class="text-right">단가</th>
+        <th class="text-right">수량</th>
+        <th class="text-right">소계</th>
+      </tr>
+    </thead>
+    <tbody id="itemTableBody"></tbody>
+    <tr class="total-row">
+      <td colspan="3" class="total-label">발주 총액</td>
+      <td class="total-amount" id="totalAmountCell"></td>
+    </tr>
+  </table>
+
+  <!-- 고객 정보 -->
+  <div class="info-block">
+    <div class="info-row">
+      <span class="info-key">주문자</span>
+      <span class="info-val" id="infoName"></span>
+    </div>
+    <div class="info-row">
+      <span class="info-key">연락처</span>
+      <span class="info-val" id="infoPhone"></span>
+    </div>
+    <div class="info-row">
+      <span class="info-key">수령방법</span>
+      <span class="info-val" id="infoMethod"></span>
+    </div>
+    <div class="info-row" id="infoAddrRow">
+      <span class="info-key">주소</span>
+      <span class="info-val" id="infoAddr"></span>
+    </div>
+    <div class="info-row" id="infoPickupTimeRow">
+      <span class="info-key">픽업시간</span>
+      <span class="info-val" id="infoPickupTime"></span>
+    </div>
+    <div class="info-row">
+      <span class="info-key">결제수단</span>
+      <span class="info-val" id="infoPayment"></span>
+    </div>
+  </div>
+
+  <!-- 결제 안내 -->
+  <div class="payment-guide" id="paymentGuide"></div>
+</div>
+
+<button class="back-btn" onclick="window.location.href='index.html'">← 발주서로 돌아가기</button>
+
+<script>
+const order = JSON.parse(localStorage.getItem('palpal_order') || '{}');
+
+if (!order.name) {
+  window.location.href = 'index.html';
+}
+
+// 날짜
+document.getElementById('receiptDate').textContent = order.date || '';
+
+// 품목 표
+const tbody = document.getElementById('itemTableBody');
+(order.items || []).forEach(item => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>
+      <div class="item-name">${item.name}</div>
+      <div class="item-unit">${item.unit} / ${item.weight}</div>
+    </td>
+    <td class="text-right">${item.price.toLocaleString()}원</td>
+    <td class="text-right">${item.qty}</td>
+    <td class="text-right subtotal-cell">${item.subtotal.toLocaleString()}원</td>
+  `;
+  tbody.appendChild(tr);
+});
+document.getElementById('totalAmountCell').textContent = (order.total || 0).toLocaleString() + '원';
+
+// 고객 정보
+document.getElementById('infoName').textContent = order.name || '';
+document.getElementById('infoPhone').textContent = order.phone || '';
+document.getElementById('infoMethod').textContent = order.method === 'delivery' ? '배송' : '픽업';
+document.getElementById('infoPayment').textContent =
+  order.payment === 'card' ? '카드결제' :
+  order.payment === 'seoul' ? '서울페이' : '계좌이체';
+
+if (order.method === 'delivery' && order.addr) {
+  document.getElementById('infoAddr').textContent = order.addr;
+  document.getElementById('infoPickupTimeRow').style.display = 'none';
+} else {
+  document.getElementById('infoAddrRow').style.display = 'none';
+  if (order.pickupTime) {
+    document.getElementById('infoPickupTime').textContent = order.pickupTime;
+  } else {
+    document.getElementById('infoPickupTimeRow').style.display = 'none';
+  }
+}
+
+// 결제 안내
+const guide = document.getElementById('paymentGuide');
+const totalFmt = (order.total || 0).toLocaleString() + '원';
+
+if (order.payment === 'card') {
+  guide.innerHTML = `
+    <div class="guide-title">💳 카드결제 안내</div>
+    <div class="guide-box">
+      <p>결제 링크는 운영자가 별도로 발송해 드립니다.</p>
+      <p>잠시만 기다려 주세요.</p>
+    </div>`;
+} else if (order.payment === 'seoul') {
+  guide.innerHTML = `
+    <div class="guide-title">🏙️ 서울페이 결제 안내</div>
+    <div class="guide-box">
+      <p>아래로 서울페이에서 직접 결제해 주세요.</p>
+      <ul class="step-list" style="margin-top:8px">
+        <li><span class="step-num-badge">1</span><span>서울페이 앱 실행</span></li>
+        <li><span class="step-num-badge">2</span><span>앱 내 <b>'비대면결제'</b> 항목 선택</span></li>
+        <li><span class="step-num-badge">3</span><span>업체명 <b>'팔팔청과'</b> 검색 후 결제금액 결제 (신길로 38길 15)</span></li>
+      </ul>
+      <div class="amount">${totalFmt}</div>
+    </div>`;
+} else {
+  guide.innerHTML = `
+    <div class="guide-title">🏦 계좌이체 안내</div>
+    <div class="guide-box">
+      <p>아래 계좌로 이체해 주세요.</p>
+      <div class="account">예금주: 이찬주 (프로젝트88)</div>
+      <div class="account">은행명: 국민은행</div>
+      <div style="display:flex; align-items:center; gap:8px; margin:6px 0;">
+        <div class="account" style="margin:0" id="accountNum">028001-04-311398</div>
+        <button onclick="copyAccount()" id="copyBtn" style="padding:4px 10px; background:#2d6a4f; color:white; border:none; border-radius:6px; font-size:11px; font-weight:700; font-family:'Noto Sans KR',sans-serif; cursor:pointer;">복사</button>
+      </div>
+      <div class="amount">입금금액: ${totalFmt}</div>
+    </div>`;
+}
+
+// 계좌번호 복사
+function copyAccount() {
+  const num = document.getElementById('accountNum').textContent;
+  navigator.clipboard.writeText(num).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '복사됨 ✓';
+    btn.style.background = '#52b788';
+    setTimeout(() => { btn.textContent = '복사'; btn.style.background = '#2d6a4f'; }, 2000);
+  });
+}
+
+// 이미지 저장
+function saveImage() {
+  html2canvas(document.getElementById('captureArea'), { scale: 2, useCORS: true }).then(canvas => {
+    const a = document.createElement('a');
+    a.download = `팔팔청과_결제안내_${order.name}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  });
+}
+
+// 카카오 공유 (카카오 앱 키 등록 후 활성화)
+function shareKakao() {
+  const itemList = (order.items || []).map(i => `${i.name} × ${i.qty}`).join(', ');
+  const methodText = order.method === 'delivery' ? '배송' : '픽업';
+  const payText = order.payment === 'card' ? '카드결제' : order.payment === 'seoul' ? '서울페이' : '계좌이체';
+  alert(`카카오톡 공유 기능은 카카오 개발자 앱 키 등록 후 활성화됩니다.\n\n주문자: ${order.name}\n수령방법: ${methodText}\n결제수단: ${payText}\n총액: ${(order.total||0).toLocaleString()}원`);
+  // 실제 연동 시 아래 코드 사용:
+  // Kakao.Share.sendDefault({ ... });
+}
+
+// 인쇄
+function printPage() {
+  window.print();
+}
+</script>
+</body>
+</html>
