@@ -187,30 +187,44 @@
     min-height: 16px;
   }
 
-  .qty-select {
-    padding: 7px 10px;
+  .qty-stepper {
+    display: flex;
+    align-items: center;
     border: 1.5px solid var(--gray4);
     border-radius: 8px;
-    font-size: 14px;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 600;
-    color: var(--gray1);
+    overflow: hidden;
     background: white;
-    cursor: pointer;
-    min-width: 64px;
-    text-align: center;
-    appearance: auto;
     transition: border-color 0.2s;
   }
-  .qty-select:focus {
-    outline: none;
-    border-color: var(--green);
-  }
-  .qty-select.has-value {
+  .qty-stepper.has-value {
     border-color: var(--green);
     background: var(--green-pale);
-    color: var(--green);
   }
+  .qty-btn {
+    width: 32px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--gray2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .qty-btn:active { background: var(--gray4); }
+  .qty-num {
+    width: 36px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray1);
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .qty-stepper.has-value .qty-num { color: var(--green); }
 
   /* Delivery/Pickup */
   .method-options {
@@ -591,28 +605,33 @@ function renderProducts() {
             <div class="product-price">${p.price.toLocaleString()}원</div>
             <div class="product-subtotal" id="sub-${key}"></div>
           </div>
-          <select class="qty-select" id="qty-${key}" onchange="updateQty('${key}', ${c}, ${i}, this)">
-            <option value="0">0</option>
-            ${Array.from({length:20},(_,n)=>`<option value="${n+1}">${n+1}</option>`).join('')}
-          </select>
+          <div class="qty-stepper" id="stepper-${key}">
+            <button class="qty-btn" onclick="changeQty('${key}', ${c}, ${i}, -1)">−</button>
+            <span class="qty-num" id="qty-${key}">0</span>
+            <button class="qty-btn" onclick="changeQty('${key}', ${c}, ${i}, 1)">+</button>
+          </div>
         </div>`;
     }).join('');
   }
 }
 
-function updateQty(key, cat, idx, sel) {
-  const qty = parseInt(sel.value);
+function changeQty(key, cat, idx, delta) {
+  const current = quantities[key] || 0;
+  const qty = Math.max(0, Math.min(99, current + delta));
   quantities[key] = qty;
   const p = products.filter(pr => pr.cat === cat)[idx];
+  const numEl = document.getElementById(`qty-${key}`);
+  const stepperEl = document.getElementById(`stepper-${key}`);
   const subEl = document.getElementById(`sub-${key}`);
   const itemEl = document.getElementById(`item-${key}`);
+  numEl.textContent = qty;
   if (qty > 0) {
     subEl.textContent = `소계: ${(p.price * qty).toLocaleString()}원`;
-    sel.classList.add('has-value');
+    stepperEl.classList.add('has-value');
     itemEl.classList.add('selected');
   } else {
     subEl.textContent = '';
-    sel.classList.remove('has-value');
+    stepperEl.classList.remove('has-value');
     itemEl.classList.remove('selected');
   }
   updateTotal();
@@ -733,13 +752,21 @@ async function submitOrder() {
   const payText = selectedPayment === 'card' ? '카드결제' : selectedPayment === 'seoul' ? '서울페이' : '계좌이체';
   const dateStr = now.toLocaleDateString('ko-KR') + ' ' + now.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
 
-  const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID_ORDERS}/values/시트1!A1:append?valueInputOption=USER_ENTERED&key=${API_KEY}`;
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw5OQjYg-R3OKDMTmSVQfATEIS9tZE2VmYDFe5V3mIpjF6bQ4zD8Szl2x0zWPMi_IntrQ/exec';
   try {
-    await fetch(appendUrl, {
+    await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
+      mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        values: [[dateStr, name, phone, methodText, selectedMethod === 'delivery' ? addr : pickupTime, payText, itemSummary, total]]
+        date: dateStr,
+        name,
+        phone,
+        method: methodText,
+        addrOrPickup: selectedMethod === 'delivery' ? addr : pickupTime,
+        payment: payText,
+        items: itemSummary,
+        total
       })
     });
   } catch(e) {
