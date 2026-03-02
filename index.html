@@ -506,35 +506,21 @@
 
 <script>
 // =====================
-// 품목 데이터 (Google Sheets 연동 전 임시 샘플)
+// Google Sheets 연동 설정
 // =====================
-const products = [
-  // 과일 국내산
-  { cat: 0, name: '사과 (후지)', unit: '박스', weight: '10kg', price: 35000 },
-  { cat: 0, name: '사과 (홍로)', unit: '봉', weight: '1.5kg', price: 12000 },
-  { cat: 0, name: '배 (신고)', unit: '박스', weight: '7.5kg', price: 42000 },
-  { cat: 0, name: '딸기 (설향)', unit: '팩', weight: '500g', price: 8000 },
-  { cat: 0, name: '감귤', unit: '박스', weight: '5kg', price: 18000 },
-  // 과일 수입
-  { cat: 1, name: '바나나', unit: '송이', weight: '1.2kg', price: 4500 },
-  { cat: 1, name: '망고 (태국산)', unit: '개', weight: '350g', price: 3500 },
-  { cat: 1, name: '오렌지 (미국산)', unit: '봉', weight: '2kg', price: 9000 },
-  { cat: 1, name: '샤인머스캣 (중국산)', unit: '송이', weight: '800g', price: 9800 },
-  // 채소
-  { cat: 2, name: '대파', unit: '단', weight: '1단', price: 2500 },
-  { cat: 2, name: '양파', unit: '망', weight: '3kg', price: 6000 },
-  { cat: 2, name: '감자', unit: '박스', weight: '5kg', price: 14000 },
-  { cat: 2, name: '당근', unit: '봉', weight: '1kg', price: 3000 },
-  // 냉동수산물
-  { cat: 3, name: '냉동 새우 (국내산)', unit: '봉', weight: '500g', price: 12000 },
-  { cat: 3, name: '냉동 오징어 (수입)', unit: '마리', weight: '300g', price: 4000 },
-  { cat: 3, name: '냉동 고등어 (국내산)', unit: '팩', weight: '1kg', price: 9500 },
-  // 기타
-  { cat: 4, name: '달걀 (특란)', unit: '판', weight: '30구', price: 7500 },
-  { cat: 4, name: '달걀 (대란)', unit: '판', weight: '30구', price: 6800 },
-];
+const API_KEY = 'AIzaSyBI8B9zk2kKdi9cZX3HHZXNKZr_48WtvQ8';
+const SHEET_ID_PRODUCTS = '1CPH7pDKz-GSVLPZ9XTepznPZNGaRAVFs8VAHc_9JjqQ';
+const SHEET_ID_ORDERS   = '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q';
 
-// 수량 저장
+const CAT_MAP = {
+  '과일(국내산)': 0,
+  '과일(수입)': 1,
+  '채소(국내산)': 2,
+  '냉동수산물': 3,
+  '기타': 4,
+};
+
+let products = [];
 const quantities = {};
 let selectedMethod = null;
 let selectedPayment = null;
@@ -546,7 +532,43 @@ const days = ['일','월','화','수','목','금','토'];
 document.getElementById('todayDate').textContent =
   `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
 
+// =====================
+// Google Sheets에서 품목 불러오기
+// =====================
+async function loadProducts() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID_PRODUCTS}/values/시트1!A2:F100?key=${API_KEY}`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.values) { showLoadError(); return; }
+
+    products = data.values
+      .filter(row => row[0] && row[1])
+      .map(row => ({
+        cat: CAT_MAP[row[0]] ?? 0,
+        name: row[1] || '',
+        unit: row[2] || '',
+        weight: row[3] || '',
+        price: parseInt((row[4] || '0').toString().replace(/,/g, '')),
+      }))
+      .filter(p => p.name && p.price > 0);
+
+    renderProducts();
+  } catch(e) {
+    showLoadError();
+  }
+}
+
+function showLoadError() {
+  for (let c = 0; c < 5; c++) {
+    document.getElementById(`cat-${c}`).innerHTML =
+      '<div class="empty-tab">⚠️ 품목을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</div>';
+  }
+}
+
+// =====================
 // 품목 렌더링
+// =====================
 function renderProducts() {
   for (let c = 0; c < 5; c++) {
     const list = document.getElementById(`cat-${c}`);
@@ -601,7 +623,7 @@ function getTotal() {
   for (const key in quantities) {
     const [c, i] = key.split('-').map(Number);
     const p = products.filter(pr => pr.cat === c)[i];
-    total += p.price * quantities[key];
+    if (p) total += p.price * quantities[key];
   }
   return total;
 }
@@ -661,7 +683,6 @@ function updateOrderBtn() {
   const name = document.getElementById('customerName').value.trim();
   const phone = document.getElementById('customerPhone').value.trim();
   const addr = document.getElementById('customerAddress').value.trim();
-
   let ok = total > 0 && selectedMethod && selectedPayment && name && phone;
   if (selectedMethod === 'delivery') {
     ok = ok && total >= 25000 && addr;
@@ -684,28 +705,54 @@ document.getElementById('customerPhone').addEventListener('input', function(e) {
 });
 document.getElementById('customerAddress').addEventListener('input', updateOrderBtn);
 
-function submitOrder() {
+// =====================
+// 주문 제출 → Google Sheets 주문내역 시트에 저장
+// =====================
+async function submitOrder() {
+  const btn = document.getElementById('orderBtn');
+  btn.disabled = true;
+  btn.textContent = '처리 중...';
+
   const total = getTotal();
   const name = document.getElementById('customerName').value.trim();
   const phone = document.getElementById('customerPhone').value.trim();
   const addr = document.getElementById('customerAddress').value.trim();
+  const pickupTime = document.getElementById('customerPickupTime').value.trim();
 
   const items = [];
   for (const key in quantities) {
     if (quantities[key] > 0) {
       const [c, i] = key.split('-').map(Number);
       const p = products.filter(pr => pr.cat === c)[i];
-      items.push({ ...p, qty: quantities[key], subtotal: p.price * quantities[key] });
+      if (p) items.push({ ...p, qty: quantities[key], subtotal: p.price * quantities[key] });
     }
   }
 
-  const pickupTime = document.getElementById('customerPickupTime').value.trim();
+  const itemSummary = items.map(i => `${i.name}×${i.qty}`).join(', ');
+  const methodText = selectedMethod === 'delivery' ? '배송' : '픽업';
+  const payText = selectedPayment === 'card' ? '카드결제' : selectedPayment === 'seoul' ? '서울페이' : '계좌이체';
+  const dateStr = now.toLocaleDateString('ko-KR') + ' ' + now.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
+
+  const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID_ORDERS}/values/시트1!A1:append?valueInputOption=USER_ENTERED&key=${API_KEY}`;
+  try {
+    await fetch(appendUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        values: [[dateStr, name, phone, methodText, selectedMethod === 'delivery' ? addr : pickupTime, payText, itemSummary, total]]
+      })
+    });
+  } catch(e) {
+    console.warn('시트 저장 실패:', e);
+  }
+
   const order = { name, phone, addr, pickupTime, method: selectedMethod, payment: selectedPayment, total, items, date: now.toLocaleDateString('ko-KR') };
   localStorage.setItem('palpal_order', JSON.stringify(order));
   window.location.href = 'result.html';
 }
 
-renderProducts();
+// 시작
+loadProducts();
 </script>
 </body>
 </html>
