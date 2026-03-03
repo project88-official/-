@@ -400,7 +400,7 @@
 <div class="header">
   <div class="header-top">
     <div>
-      <img src="4.png" alt="팔팔청과" style="height:176px; display:block; margin-bottom:4px;">
+      <img src="4.png" alt="팔팔청과" style="width:100%; max-width:400px; display:block; margin-bottom:4px;">
       <div class="today-date" id="todayDate"></div>
     </div>
     <div class="header-total">
@@ -504,6 +504,20 @@
     <div id="pickupTimeField" style="display:none">
       <div class="field-label">픽업 예상시간</div>
       <input class="field-input" id="customerPickupTime" type="text" placeholder="예) 오후 2시, 18:00 등">
+    </div>
+  </div>
+</div>
+
+<!-- 기타요청사항 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <div class="section-title">기타요청사항</div>
+  </div>
+  <div class="form-fields">
+    <div>
+      <div class="field-label" style="color:var(--gray3)">선택사항 · 자유롭게 입력해 주세요</div>
+      <textarea class="field-input" id="customerNote" placeholder="예) 사과 단단한 걸로 부탁드려요" style="resize:none; height:100px; line-height:1.6;"></textarea>
     </div>
   </div>
 </div>
@@ -738,6 +752,7 @@ async function submitOrder() {
   const phone = document.getElementById('customerPhone').value.trim();
   const addr = document.getElementById('customerAddress').value.trim();
   const pickupTime = document.getElementById('customerPickupTime').value.trim();
+  const note = document.getElementById('customerNote').value.trim();
 
   const items = [];
   for (const key in quantities) {
@@ -767,14 +782,15 @@ async function submitOrder() {
         addrOrPickup: selectedMethod === 'delivery' ? addr : pickupTime,
         payment: payText,
         items: itemSummary,
-        total
+        total,
+        note
       })
     });
   } catch(e) {
     console.warn('시트 저장 실패:', e);
   }
 
-  const order = { name, phone, addr, pickupTime, method: selectedMethod, payment: selectedPayment, total, items, date: now.toLocaleDateString('ko-KR') };
+  const order = { name, phone, addr, pickupTime, method: selectedMethod, payment: selectedPayment, total, items, date: now.toLocaleDateString('ko-KR'), note };
   localStorage.setItem('palpal_order', JSON.stringify(order));
   window.location.href = 'result.html';
 }
