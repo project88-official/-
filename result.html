@@ -455,7 +455,7 @@ function shareKakao() {
   }
 
   const noteText = order.note ? `\n기타요청: ${order.note}` : '';
-  const text = `🥬 팔팔청과 주문 완료!\n\n[주문 내역]\n${itemList}\n\n발주 총액: ${(order.total||0).toLocaleString()}원\n\n주문자: ${order.name}\n연락처: ${order.phone}\n수령방법: ${methodText}\n${addrLabel}${noteText}\n\n${payGuide}`;
+  const text = `🍎 팔팔청과 주문 완료!\n\n[주문 내역]\n${itemList}\n\n발주 총액: ${(order.total||0).toLocaleString()}원\n\n주문자: ${order.name}\n연락처: ${order.phone}\n수령방법: ${methodText}\n${addrLabel}${noteText}\n\n${payGuide}`;
 
   Kakao.Share.sendDefault({
     objectType: 'text',
