@@ -49,11 +49,14 @@
     align-items: center;
   }
   .store-name {
-    font-size: 30px;
+    font-size: 28px;
     font-weight: 900;
-    letter-spacing: -0.5px;
+    letter-spacing: -1px;
   }
-  .store-name span { color: #a7f3c0; }
+  .store-name .s1 { color: #212529; }
+  .store-name .s2 { color: #2563eb; }
+  .store-name .s3 { color: #22c55e; }
+  .store-name .s4 { color: #ef4444; }
   .today-date {
     font-size: 13px;
     color: var(--gray3);
@@ -408,7 +411,7 @@
 <div class="header">
   <div class="header-top">
     <div>
-      <img src="4.png" alt="팔팔청과" style="height:36px; display:block; margin-bottom:2px;">
+      <div class="store-name"><span class="s1">팔</span><span class="s2">팔</span><span class="s3">청</span><span class="s4">과</span></div>
       <div class="today-date" id="todayDate"></div>
     </div>
     <div class="header-total">
