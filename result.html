@@ -233,7 +233,7 @@
 <body>
 
 <div class="header">
-  <img src="4.png" alt="팔팔청과" style="height:160px; display:block; margin-bottom:2px;">
+  <img src="4.png" alt="팔팔청과" style="width:100%; max-width:400px; display:block; margin-bottom:2px;">
   <div class="header-sub">결제 안내</div>
 </div>
 
@@ -307,6 +307,10 @@
       <span class="info-key">결제수단</span>
       <span class="info-val" id="infoPayment"></span>
     </div>
+    <div class="info-row" id="infoNoteRow" style="display:none">
+      <span class="info-key">기타요청</span>
+      <span class="info-val" id="infoNote"></span>
+    </div>
   </div>
 
   <!-- 결제 안내 -->
@@ -349,6 +353,11 @@ document.getElementById('infoMethod').textContent = order.method === 'delivery' 
 document.getElementById('infoPayment').textContent =
   order.payment === 'card' ? '카드결제' :
   order.payment === 'seoul' ? '서울페이' : '계좌이체';
+
+if (order.note) {
+  document.getElementById('infoNote').textContent = order.note;
+  document.getElementById('infoNoteRow').style.display = 'flex';
+}
 
 if (order.method === 'delivery' && order.addr) {
   document.getElementById('infoAddr').textContent = order.addr;
