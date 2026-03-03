@@ -385,19 +385,23 @@ if (order.payment === 'card') {
   guide.innerHTML = `
     <div class="guide-title">💳 카드결제 안내</div>
     <div class="guide-box">
-      <p>"결제선생" 링크를 카카오톡으로 보내드리고 있어요.</p>
-      <p>로그인 필요 없이 편하신 수단으로 결제해주시면 돼요.</p>
-      <p>발주 취합 후 순차적으로 결제링크 보내고 있으니 조금만 기다려주셔요.</p>
+      <ul class="step-list">
+        <li><span class="step-num-badge">1</span><span>"결제선생" 결제링크를 카카오톡으로 보내고 있어요.</span></li>
+        <li><span class="step-num-badge">2</span><span>로그인 없이 편하신 수단으로 결제하실 수 있어요.</span></li>
+        <li><span class="step-num-badge">3</span><span>발주 취합 후 직접, 수동으로, 순차적으로 보내고 있어요.</span></li>
+        <li><span class="step-num-badge">4</span><span>조금만 기다려주셔요.</span></li>
+      </ul>
     </div>`;
 } else if (order.payment === 'seoul') {
   guide.innerHTML = `
     <div class="guide-title">🏙️ 서울페이 결제 안내</div>
     <div class="guide-box">
-      <p>아래로 서울페이에서 직접 결제해 주세요.</p>
+      <p>아래로 서울페이에서 직접 결제해주셔요.</p>
       <ul class="step-list" style="margin-top:8px">
         <li><span class="step-num-badge">1</span><span>서울페이 앱 실행</span></li>
         <li><span class="step-num-badge">2</span><span>앱 내 <b>'비대면결제'</b> 항목 선택</span></li>
-        <li><span class="step-num-badge">3</span><span>업체명 <b>'팔팔청과'</b> 검색 후 결제금액 결제 (신길로 38길 15)</span></li>
+        <li><span class="step-num-badge">3</span><span>업체명 <b>'팔팔청과'</b> 검색 (신길로38길15)</span></li>
+        <li><span class="step-num-badge">4</span><span>주문금액 결제</span></li>
       </ul>
       <div class="amount">${totalFmt}</div>
     </div>`;
@@ -405,13 +409,13 @@ if (order.payment === 'card') {
   guide.innerHTML = `
     <div class="guide-title">🏦 계좌이체 안내</div>
     <div class="guide-box">
-      <p>아래 계좌로 이체해 주세요.</p>
-      <div class="account">예금주: 이찬주 (프로젝트88)</div>
-      <div class="account">은행명: 국민은행</div>
-      <div style="display:flex; align-items:center; gap:8px; margin:6px 0;">
+      <p>아래 계좌로 이체해주셔요.</p>
+      <div style="display:flex; align-items:center; gap:8px; margin:10px 0 4px;">
         <div class="account" style="margin:0" id="accountNum">028001-04-311398</div>
-        <button onclick="copyAccount()" id="copyBtn" style="padding:4px 10px; background:#2d6a4f; color:white; border:none; border-radius:6px; font-size:11px; font-weight:700; font-family:'Noto Sans KR',sans-serif; cursor:pointer;">복사</button>
+        <button onclick="copyAccount()" id="copyBtn" style="padding:4px 10px; background:#2d6a4f; color:white; border:none; border-radius:6px; font-size:11px; font-weight:700; font-family:inherit; cursor:pointer;">복사</button>
       </div>
+      <div class="account">국민은행</div>
+      <div class="account">이찬주 (프로젝트88)</div>
       <div class="amount">입금금액: ${totalFmt}</div>
     </div>`;
 }
