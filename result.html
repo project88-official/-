@@ -66,34 +66,35 @@
   .summary-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 19px;
+    font-size: 15px;
   }
   .summary-table thead th {
     background: var(--gray5);
-    padding: 8px 12px;
+    padding: 8px 8px;
     text-align: left;
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--gray3);
+    white-space: nowrap;
   }
   .summary-table tbody td {
-    padding: 10px 12px;
+    padding: 10px 8px;
     border-bottom: 1px solid var(--gray5);
     vertical-align: middle;
   }
   .summary-table tbody tr:last-child td { border-bottom: none; }
   .item-name { font-weight: 600; color: var(--gray1); }
-  .item-unit { font-size: 16px; color: var(--gray3); margin-top: 2px; }
-  .text-right { text-align: right; }
-  .subtotal-cell { font-weight: 700; color: var(--gray1); }
+  .item-unit { font-size: 13px; color: var(--gray3); margin-top: 2px; }
+  .text-right { text-align: right; white-space: nowrap; }
+  .subtotal-cell { font-weight: 700; color: var(--gray1); white-space: nowrap; }
 
   .total-row {
     background: var(--green);
     color: white;
   }
-  .total-row td { padding: 12px; }
-  .total-label { font-size: 19px; font-weight: 700; }
-  .total-amount { font-size: 25px; font-weight: 900; text-align: right; letter-spacing: -1px; }
+  .total-row td { padding: 12px 8px; }
+  .total-label { font-size: 17px; font-weight: 700; }
+  .total-amount { font-size: 20px; font-weight: 900; text-align: right; letter-spacing: -1px; white-space: nowrap; }
 
   /* Customer info */
   .info-block {
