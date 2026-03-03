@@ -6,6 +6,7 @@
 <title>팔팔청과 — 결제안내</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
 <style>
   :root {
     --green: #2d6a4f;
@@ -422,14 +423,22 @@ function saveImage() {
   });
 }
 
-// 카카오 공유 (카카오 앱 키 등록 후 활성화)
+// 카카오 공유
+Kakao.init('4506a2e32c69995bdb8eef80a82c5504');
+
 function shareKakao() {
-  const itemList = (order.items || []).map(i => `${i.name} × ${i.qty}`).join(', ');
+  const itemList = (order.items || []).map(i => `${i.name} × ${i.qty}`).join('\n');
   const methodText = order.method === 'delivery' ? '배송' : '픽업';
   const payText = order.payment === 'card' ? '카드결제' : order.payment === 'seoul' ? '서울페이' : '계좌이체';
-  alert(`카카오톡 공유 기능은 카카오 개발자 앱 키 등록 후 활성화됩니다.\n\n주문자: ${order.name}\n수령방법: ${methodText}\n결제수단: ${payText}\n총액: ${(order.total||0).toLocaleString()}원`);
-  // 실제 연동 시 아래 코드 사용:
-  // Kakao.Share.sendDefault({ ... });
+
+  Kakao.Share.sendDefault({
+    objectType: 'text',
+    text: `🥬 팔팔청과 주문 완료!\n\n주문자: ${order.name}\n수령방법: ${methodText}\n결제수단: ${payText}\n\n${itemList}\n\n총액: ${(order.total||0).toLocaleString()}원`,
+    link: {
+      mobileWebUrl: 'https://project88-official.github.io/-/',
+      webUrl: 'https://project88-official.github.io/-/',
+    },
+  });
 }
 
 // 인쇄
