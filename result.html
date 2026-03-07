@@ -391,6 +391,7 @@ if (order.payment === 'card') {
         <li><span class="step-num-badge">3</span><span>제가 발주 취합 후에 직접, 순차적으로 보내고 있어요</span></li>
         <li><span class="step-num-badge">4</span><span>조금만 기다려주시면 감사해요</span></li>
       </ul>
+      <div class="amount">${totalFmt}</div>
     </div>`;
 } else if (order.payment === 'seoul') {
   guide.innerHTML = `
@@ -416,6 +417,7 @@ if (order.payment === 'card') {
       </div>
       <div class="account">국민은행</div>
       <div class="account">이찬주 (프로젝트88)</div>
+      <div class="amount">${totalFmt}</div>
     </div>`;
 }
 
