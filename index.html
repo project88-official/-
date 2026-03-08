@@ -516,6 +516,10 @@
       <div class="field-label">픽업 예상시간</div>
       <input class="field-input" id="customerPickupTime" type="text" placeholder="예) 오후 2시, 18:00 등">
     </div>
+    <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+      <input type="checkbox" id="saveInfoCheck" style="width:18px; height:18px; accent-color:#22c55e; cursor:pointer;">
+      <label for="saveInfoCheck" style="font-size:14px; color:#555; cursor:pointer;">다음에도 이 정보 사용하기</label>
+    </div>
   </div>
 </div>
 
@@ -765,6 +769,13 @@ async function submitOrder() {
   const pickupTime = document.getElementById('customerPickupTime').value.trim();
   const note = document.getElementById('customerNote').value.trim();
 
+  // 고객정보 저장 여부 처리
+  if (document.getElementById('saveInfoCheck').checked) {
+    localStorage.setItem('palpal_customer', JSON.stringify({ name, phone, addr }));
+  } else {
+    localStorage.removeItem('palpal_customer');
+  }
+
   const items = [];
   for (const key in quantities) {
     if (quantities[key] > 0) {
@@ -808,6 +819,18 @@ async function submitOrder() {
 
 // 시작
 loadProducts();
+
+// 저장된 고객정보 불러오기
+(function() {
+  const saved = localStorage.getItem('palpal_customer');
+  if (saved) {
+    const info = JSON.parse(saved);
+    document.getElementById('customerName').value = info.name || '';
+    document.getElementById('customerPhone').value = info.phone || '010-';
+    document.getElementById('customerAddress').value = info.addr || '';
+    document.getElementById('saveInfoCheck').checked = true;
+  }
+})();
 </script>
 </body>
 </html>
