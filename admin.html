@@ -150,7 +150,7 @@
 const API_KEY = 'AIzaSyBI8B9zk2kKdi9cZX3HHZXNKZr_48WtvQ8';
 const SHEET_IDS = [
   '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q', // 팔팔청과
-  '1asRJ4mbUYiHWHG-pG7N39Sa1tt88z4clsghVXlbLDQI'  // 성심당
+  '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q'  // 성심당
 ];
 const BRAND_NAMES = ['팔팔청과', '성심당'];
 const PASSWORD = '515300';
@@ -213,7 +213,7 @@ function updatePanels() {
 async function loadOrders(brand) {
   document.getElementById(`todayList${brand}`).innerHTML = '<div class="loading">불러오는 중...</div>';
   document.getElementById(`allList${brand}`).innerHTML = '<div class="loading">불러오는 중...</div>';
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_IDS[brand]}/values/시트1!A2:I500?key=${API_KEY}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_IDS[brand]}/values/${brand === 1 ? '성심당' : '시트1'}!A2:I500?key=${API_KEY}`;
   try {
     const res = await fetch(url);
     const data = await res.json();
