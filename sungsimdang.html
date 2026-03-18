@@ -449,13 +449,13 @@
     <div class="section-num">2</div>
     <div class="section-title">배송일/수령일 선택</div>
   </div>
-  <div style="display:flex; gap:16px; padding:4px 0;">
-    <label style="display:flex; align-items:center; gap:8px; font-size:15px; font-weight:600; cursor:pointer;">
-      <input type="radio" name="deliveryDate" value="3/27(금)" id="date1" style="width:18px; height:18px; accent-color:#22c55e;" checked>
+  <div style="display:flex; gap:12px; padding:4px 0;">
+    <label style="display:flex; align-items:center; justify-content:center; gap:10px; font-size:17px; font-weight:700; cursor:pointer; flex:1; padding:16px; border:2px solid #dee2e6; border-radius:12px; background:#f8f9fa;" id="dateLabel1">
+      <input type="radio" name="deliveryDate" value="3/27(금)" id="date1" style="width:20px; height:20px; accent-color:#22c55e;" checked onchange="updateDateStyle()">
       3/27 (금)
     </label>
-    <label style="display:flex; align-items:center; gap:8px; font-size:15px; font-weight:600; cursor:pointer;">
-      <input type="radio" name="deliveryDate" value="3/28(토)" id="date2" style="width:18px; height:18px; accent-color:#22c55e;">
+    <label style="display:flex; align-items:center; justify-content:center; gap:10px; font-size:17px; font-weight:700; cursor:pointer; flex:1; padding:16px; border:2px solid #dee2e6; border-radius:12px; background:#f8f9fa;" id="dateLabel2">
+      <input type="radio" name="deliveryDate" value="3/28(토)" id="date2" style="width:20px; height:20px; accent-color:#22c55e;" onchange="updateDateStyle()">
       3/28 (토)
     </label>
   </div>
@@ -702,6 +702,16 @@ function switchTab(idx) {
   document.querySelectorAll('[id^="cat-"]').forEach((el,i) => el.classList.toggle('category-hidden', i!==idx));
   currentTab = idx;
 }
+
+function updateDateStyle() {
+  const d1 = document.getElementById('date1').checked;
+  document.getElementById('dateLabel1').style.borderColor = d1 ? '#22c55e' : '#dee2e6';
+  document.getElementById('dateLabel1').style.background = d1 ? '#d8f3dc' : '#f8f9fa';
+  document.getElementById('dateLabel2').style.borderColor = d1 ? '#dee2e6' : '#22c55e';
+  document.getElementById('dateLabel2').style.background = d1 ? '#f8f9fa' : '#d8f3dc';
+}
+// 초기 스타일 적용
+document.addEventListener('DOMContentLoaded', updateDateStyle);
 
 function selectMethod(m) {
   selectedMethod = m;
