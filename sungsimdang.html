@@ -782,7 +782,7 @@ async function submitOrder() {
   const payText = selectedPayment === 'card' ? '카드결제' : selectedPayment === 'seoul' ? '서울페이' : '계좌이체';
   const dateStr = now.toLocaleDateString('ko-KR') + ' ' + now.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
 
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvDs726qHOCg_aMuG0dBfAOxQXSwLa5iz82ge48ulSp8eGNeSU0ARsGIqYe-xjr-aloA/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzlNesFn4TIda2axuQgaXyz9juwualg_V7BymSP1wJ4ntg8_aVJwYn-jZMO9gzKbPPGNQ/exec';
   try {
     const formData = new FormData();
     formData.append('date', dateStr);
@@ -794,6 +794,7 @@ async function submitOrder() {
     formData.append('items', itemSummary);
     formData.append('total', total);
     formData.append('note', note);
+    formData.append('source', 'sungsimdang');
 
     await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
