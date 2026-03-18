@@ -443,10 +443,28 @@
   <div id="cat-4" class="product-list category-hidden"></div>
 </div>
 
-<!-- 수령방법 -->
+<!-- 배송일/수령일 선택 -->
 <div class="section">
   <div class="section-header">
     <div class="section-num">2</div>
+    <div class="section-title">배송일/수령일 선택</div>
+  </div>
+  <div style="display:flex; gap:16px; padding:4px 0;">
+    <label style="display:flex; align-items:center; gap:8px; font-size:15px; font-weight:600; cursor:pointer;">
+      <input type="radio" name="deliveryDate" value="3/27(금)" id="date1" style="width:18px; height:18px; accent-color:#22c55e;" checked>
+      3/27 (금)
+    </label>
+    <label style="display:flex; align-items:center; gap:8px; font-size:15px; font-weight:600; cursor:pointer;">
+      <input type="radio" name="deliveryDate" value="3/28(토)" id="date2" style="width:18px; height:18px; accent-color:#22c55e;">
+      3/28 (토)
+    </label>
+  </div>
+</div>
+
+<!-- 수령방법 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">3</div>
     <div class="section-title">수령방법</div>
   </div>
   <div class="method-options">
@@ -470,7 +488,7 @@
 <!-- 결제수단 -->
 <div class="section">
   <div class="section-header">
-    <div class="section-num">3</div>
+    <div class="section-num">4</div>
     <div class="section-title">결제수단</div>
   </div>
   <div class="payment-options">
@@ -492,7 +510,7 @@
 <!-- 고객정보 -->
 <div class="section">
   <div class="section-header">
-    <div class="section-num">4</div>
+    <div class="section-num">5</div>
     <div class="section-title">고객정보</div>
   </div>
   <div class="form-fields">
@@ -522,7 +540,7 @@
 <!-- 기타요청사항 -->
 <div class="section">
   <div class="section-header">
-    <div class="section-num">5</div>
+    <div class="section-num">6</div>
     <div class="section-title">기타요청사항</div>
   </div>
   <div class="form-fields">
@@ -760,6 +778,7 @@ async function submitOrder() {
   const addr = document.getElementById('customerAddress').value.trim();
   const pickupTime = document.getElementById('customerPickupTime').value.trim();
   const note = document.getElementById('customerNote').value.trim();
+  const deliveryDate = document.querySelector('input[name=deliveryDate]:checked').value;
 
   // 고객정보 저장 여부 처리
   if (document.getElementById('saveInfoCheck').checked) {
@@ -794,6 +813,7 @@ async function submitOrder() {
     formData.append('items', itemSummary);
     formData.append('total', total);
     formData.append('note', note);
+    formData.append('deliveryDate', deliveryDate);
     formData.append('source', 'sungsimdang');
 
     await fetch(APPS_SCRIPT_URL, {
