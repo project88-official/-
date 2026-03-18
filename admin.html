@@ -11,6 +11,7 @@
     --gray1: #212529; --gray2: #495057; --gray3: #868e96;
     --gray4: #dee2e6; --gray5: #f1f3f5; --radius: 12px;
     --shadow: 0 2px 12px rgba(0,0,0,0.08); --red: #e63946;
+    --orange: #f77f00; --orange-pale: #fff3e0;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--gray1); min-height: 100vh; }
@@ -30,15 +31,23 @@
   .header-date { font-size: 13px; opacity: 0.8; }
   .logout-btn { padding: 6px 12px; background: rgba(255,255,255,0.2); border: none; border-radius: 8px; color: white; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 600; }
 
-  .tabs { display: flex; background: white; border-bottom: 1px solid var(--gray4); position: sticky; top: 57px; z-index: 99; }
-  .tab { flex: 1; padding: 14px 8px; text-align: center; font-size: 14px; font-weight: 600; color: var(--gray3); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
-  .tab.active { color: var(--green); border-bottom-color: var(--green); }
+  /* 브랜드 탭 */
+  .brand-tabs { display: flex; background: white; border-bottom: 2px solid var(--gray4); position: sticky; top: 57px; z-index: 99; }
+  .brand-tab { flex: 1; padding: 14px 8px; text-align: center; font-size: 15px; font-weight: 700; color: var(--gray3); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  .brand-tab.active-green { color: var(--green); border-bottom-color: var(--green); }
+  .brand-tab.active-orange { color: var(--orange); border-bottom-color: var(--orange); }
+
+  /* 서브 탭 */
+  .sub-tabs { display: flex; background: var(--gray5); border-bottom: 1px solid var(--gray4); position: sticky; top: 106px; z-index: 98; }
+  .sub-tab { flex: 1; padding: 10px 8px; text-align: center; font-size: 13px; font-weight: 600; color: var(--gray3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .sub-tab.active { color: var(--gray1); border-bottom-color: var(--gray1); }
 
   .content { padding: 16px; max-width: 720px; margin: 0 auto; }
   .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
   .stat-card { background: white; border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); }
   .stat-label { font-size: 12px; color: var(--gray3); margin-bottom: 6px; }
   .stat-value { font-size: 24px; font-weight: 900; color: var(--green); }
+  .stat-value.orange { color: var(--orange); }
   .stat-sub { font-size: 12px; color: var(--gray3); margin-top: 2px; }
 
   .order-card { background: white; border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); margin-bottom: 12px; }
@@ -46,16 +55,19 @@
   .order-name { font-size: 17px; font-weight: 700; }
   .order-time { font-size: 12px; color: var(--gray3); margin-top: 2px; }
   .order-total { font-size: 18px; font-weight: 900; color: var(--green); }
+  .order-total.orange { color: var(--orange); }
   .order-info { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
   .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
   .badge-method { background: #e8f4fd; color: #1565c0; }
   .badge-pay { background: var(--green-pale); color: var(--green); }
+  .badge-pay.orange { background: var(--orange-pale); color: var(--orange); }
   .badge-addr { background: var(--gray5); color: var(--gray2); font-size: 11px; }
   .order-items { font-size: 13px; color: var(--gray2); background: var(--gray5); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; line-height: 1.7; }
   .order-footer { display: flex; justify-content: flex-end; }
   .print-btn { padding: 8px 20px; background: var(--gray1); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
 
   .refresh-btn { padding: 8px 16px; background: var(--green-pale); color: var(--green); border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; margin-bottom: 16px; }
+  .refresh-btn.orange { background: var(--orange-pale); color: var(--orange); }
   .section-title { font-size: 13px; font-weight: 700; color: var(--gray3); margin-bottom: 12px; }
   .empty { text-align: center; padding: 60px 20px; color: var(--gray3); font-size: 15px; }
   .loading { text-align: center; padding: 40px; color: var(--gray3); font-size: 15px; }
@@ -88,20 +100,47 @@
     </div>
     <button class="logout-btn" onclick="logout()">로그아웃</button>
   </div>
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab(0)">오늘 주문</div>
-    <div class="tab" onclick="switchTab(1)">전체 주문</div>
+
+  <!-- 브랜드 탭 -->
+  <div class="brand-tabs">
+    <div class="brand-tab active-green" onclick="switchBrand(0)">🥬 팔팔청과 발주</div>
+    <div class="brand-tab" onclick="switchBrand(1)">🍞 성심당 공구</div>
   </div>
-  <div id="tab-0" class="content">
-    <div class="stats-grid" id="statsGrid"></div>
-    <button class="refresh-btn" onclick="loadOrders()">↻ 새로고침</button>
+
+  <!-- 서브 탭 -->
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="switchSub(0)">오늘 주문</div>
+    <div class="sub-tab" onclick="switchSub(1)">전체 주문</div>
+  </div>
+
+  <!-- 팔팔청과 오늘 주문 -->
+  <div id="panel-0-0" class="content">
+    <div class="stats-grid" id="statsGrid0"></div>
+    <button class="refresh-btn" onclick="loadOrders(0)">↻ 새로고침</button>
     <div class="section-title">오늘 주문 목록</div>
-    <div id="todayList"><div class="loading">불러오는 중...</div></div>
+    <div id="todayList0"><div class="loading">불러오는 중...</div></div>
   </div>
-  <div id="tab-1" class="content" style="display:none">
-    <button class="refresh-btn" onclick="loadOrders()">↻ 새로고침</button>
+
+  <!-- 팔팔청과 전체 주문 -->
+  <div id="panel-0-1" class="content" style="display:none">
+    <button class="refresh-btn" onclick="loadOrders(0)">↻ 새로고침</button>
     <div class="section-title">전체 주문 내역</div>
-    <div id="allList"><div class="loading">불러오는 중...</div></div>
+    <div id="allList0"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <!-- 성심당 오늘 주문 -->
+  <div id="panel-1-0" class="content" style="display:none">
+    <div class="stats-grid" id="statsGrid1"></div>
+    <button class="refresh-btn orange" onclick="loadOrders(1)">↻ 새로고침</button>
+    <div class="section-title">오늘 주문 목록</div>
+    <div id="todayList1"><div class="loading">불러오는 중...</div></div>
+  </div>
+
+  <!-- 성심당 전체 주문 -->
+  <div id="panel-1-1" class="content" style="display:none">
+    <button class="refresh-btn orange" onclick="loadOrders(1)">↻ 새로고침</button>
+    <div class="section-title">전체 주문 내역</div>
+    <div id="allList1"><div class="loading">불러오는 중...</div></div>
   </div>
 </div>
 
@@ -109,9 +148,15 @@
 
 <script>
 const API_KEY = 'AIzaSyBI8B9zk2kKdi9cZX3HHZXNKZr_48WtvQ8';
-const SHEET_ID_ORDERS = '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q';
+const SHEET_IDS = [
+  '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q', // 팔팔청과
+  '1P4Zf1HDbYTB92W29pHitxLvFYpqhPcA-5Vq7-7-Vd7s'  // 성심당
+];
+const BRAND_NAMES = ['팔팔청과', '성심당'];
 const PASSWORD = '515300';
-let allOrders = [];
+let allOrders = [[], []];
+let currentBrand = 0;
+let currentSub = 0;
 
 function login() {
   const pw = document.getElementById('pwInput').value;
@@ -125,67 +170,101 @@ function login() {
   }
 }
 document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
 function logout() {
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('mainScreen').style.display = 'none';
   document.getElementById('pwInput').value = '';
 }
+
 function initMain() {
   const now = new Date();
   const days = ['일','월','화','수','목','금','토'];
   document.getElementById('headerDate').textContent =
     `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
-  loadOrders();
+  loadOrders(0);
+  loadOrders(1);
 }
-async function loadOrders() {
-  document.getElementById('todayList').innerHTML = '<div class="loading">불러오는 중...</div>';
-  document.getElementById('allList').innerHTML = '<div class="loading">불러오는 중...</div>';
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID_ORDERS}/values/시트1!A2:H500?key=${API_KEY}`;
+
+function switchBrand(brand) {
+  currentBrand = brand;
+  document.querySelectorAll('.brand-tab').forEach((t, i) => {
+    t.classList.remove('active-green', 'active-orange');
+    if (i === brand) t.classList.add(brand === 0 ? 'active-green' : 'active-orange');
+  });
+  updatePanels();
+}
+
+function switchSub(sub) {
+  currentSub = sub;
+  document.querySelectorAll('.sub-tab').forEach((t, i) => t.classList.toggle('active', i === sub));
+  updatePanels();
+}
+
+function updatePanels() {
+  for (let b = 0; b < 2; b++) {
+    for (let s = 0; s < 2; s++) {
+      const panel = document.getElementById(`panel-${b}-${s}`);
+      if (panel) panel.style.display = (b === currentBrand && s === currentSub) ? 'block' : 'none';
+    }
+  }
+}
+
+async function loadOrders(brand) {
+  document.getElementById(`todayList${brand}`).innerHTML = '<div class="loading">불러오는 중...</div>';
+  document.getElementById(`allList${brand}`).innerHTML = '<div class="loading">불러오는 중...</div>';
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_IDS[brand]}/values/시트1!A2:I500?key=${API_KEY}`;
   try {
     const res = await fetch(url);
     const data = await res.json();
-    if (!data.values) { allOrders = []; renderAll(); return; }
-    allOrders = data.values.map((row, idx) => ({
+    if (!data.values) { allOrders[brand] = []; renderAll(brand); return; }
+    allOrders[brand] = data.values.map((row, idx) => ({
       idx, date: row[0]||'', name: row[1]||'', phone: row[2]||'',
       method: row[3]||'', addrOrPickup: row[4]||'',
-      payment: row[5]||'', items: row[6]||'', total: row[7]||'0',
+      payment: row[5]||'', items: row[6]||'', total: row[7]||'0', note: row[8]||''
     })).reverse();
-    renderAll();
+    renderAll(brand);
   } catch(e) {
-    document.getElementById('todayList').innerHTML = '<div class="empty">⚠️ 불러오지 못했습니다.</div>';
-    document.getElementById('allList').innerHTML = '<div class="empty">⚠️ 불러오지 못했습니다.</div>';
+    document.getElementById(`todayList${brand}`).innerHTML = '<div class="empty">⚠️ 불러오지 못했습니다.</div>';
+    document.getElementById(`allList${brand}`).innerHTML = '<div class="empty">⚠️ 불러오지 못했습니다.</div>';
   }
 }
+
 function isToday(dateStr) {
   const now = new Date();
   const today = `${now.getFullYear()}. ${now.getMonth()+1}. ${now.getDate()}`;
   return dateStr.startsWith(today);
 }
-function renderAll() {
-  const todayOrders = allOrders.filter(o => isToday(o.date));
+
+function renderAll(brand) {
+  const isOrange = brand === 1;
+  const todayOrders = allOrders[brand].filter(o => isToday(o.date));
   const total = todayOrders.reduce((s, o) => s + parseInt(o.total||0), 0);
   const delivery = todayOrders.filter(o => o.method === '배송').length;
   const pickup = todayOrders.filter(o => o.method === '픽업').length;
-  document.getElementById('statsGrid').innerHTML = `
+  document.getElementById(`statsGrid${brand}`).innerHTML = `
     <div class="stat-card">
       <div class="stat-label">오늘 주문</div>
-      <div class="stat-value">${todayOrders.length}건</div>
+      <div class="stat-value ${isOrange ? 'orange' : ''}">${todayOrders.length}건</div>
       <div class="stat-sub">배송 ${delivery} · 픽업 ${pickup}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">오늘 매출</div>
-      <div class="stat-value">${total.toLocaleString()}원</div>
+      <div class="stat-value ${isOrange ? 'orange' : ''}">${total.toLocaleString()}원</div>
       <div class="stat-sub">총 합계</div>
     </div>`;
-  renderList(todayOrders, 'todayList');
-  renderList(allOrders, 'allList');
+  renderList(allOrders[brand].filter(o => isToday(o.date)), `todayList${brand}`, brand);
+  renderList(allOrders[brand], `allList${brand}`, brand);
 }
-function renderList(orders, containerId) {
+
+function renderList(orders, containerId, brand) {
+  const isOrange = brand === 1;
   const el = document.getElementById(containerId);
   if (!orders.length) { el.innerHTML = '<div class="empty">주문이 없습니다 🌿</div>'; return; }
   el.innerHTML = orders.map(o => {
     const itemLines = o.items.split(',').map(i => `• ${i.trim()}`).join('<br>');
     const addrLabel = o.method === '배송' ? '📍 ' + o.addrOrPickup : '⏰ ' + o.addrOrPickup;
+    const noteHtml = o.note ? `<div class="order-items" style="margin-top:6px;">📝 ${o.note}</div>` : '';
     return `
       <div class="order-card">
         <div class="order-header">
@@ -193,33 +272,31 @@ function renderList(orders, containerId) {
             <div class="order-name">${o.name}</div>
             <div class="order-time">${o.date} · ${o.phone}</div>
           </div>
-          <div class="order-total">${parseInt(o.total).toLocaleString()}원</div>
+          <div class="order-total ${isOrange ? 'orange' : ''}">${parseInt(o.total).toLocaleString()}원</div>
         </div>
         <div class="order-info">
           <span class="badge badge-method">${o.method}</span>
-          <span class="badge badge-pay">${o.payment}</span>
+          <span class="badge badge-pay ${isOrange ? 'orange' : ''}">${o.payment}</span>
           ${o.addrOrPickup ? `<span class="badge badge-addr">${addrLabel}</span>` : ''}
         </div>
         <div class="order-items">${itemLines}</div>
+        ${noteHtml}
         <div class="order-footer">
-          <button class="print-btn" onclick="printReceipt(${o.idx})">🖨️ 영수증 출력</button>
+          <button class="print-btn" onclick="printReceipt(${o.idx}, ${brand})">🖨️ 영수증 출력</button>
         </div>
       </div>`;
   }).join('');
 }
-function switchTab(idx) {
-  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
-  document.getElementById('tab-0').style.display = idx === 0 ? 'block' : 'none';
-  document.getElementById('tab-1').style.display = idx === 1 ? 'block' : 'none';
-}
-function printReceipt(idx) {
-  const o = allOrders.find(o => o.idx === idx);
+
+function printReceipt(idx, brand) {
+  const o = allOrders[brand].find(o => o.idx === idx);
   if (!o) return;
   const itemLines = o.items.split(',').map(i => i.trim()).join('\n');
   const div = '-'.repeat(32);
+  const brandLabel = brand === 1 ? '성심당 공구' : '팔팔청과';
   document.getElementById('printArea').innerHTML = `
     <div style="width:58mm;font-family:monospace;font-size:11px;padding:4px;color:#000;">
-      <div style="text-align:center;font-size:14px;font-weight:bold;margin-bottom:2px;">팔팔청과</div>
+      <div style="text-align:center;font-size:14px;font-weight:bold;margin-bottom:2px;">${brandLabel}</div>
       <div style="text-align:center;font-size:10px;margin-bottom:6px;">${o.date}</div>
       <div>${div}</div>
       <div style="margin:4px 0;line-height:1.8;">
@@ -230,6 +307,7 @@ function printReceipt(idx) {
       </div>
       <div>${div}</div>
       <div style="margin:4px 0;white-space:pre-line;line-height:1.8;">${itemLines}</div>
+      ${o.note ? `<div>${div}</div><div style="margin:4px 0;">요청: ${o.note}</div>` : ''}
       <div>${div}</div>
       <div style="text-align:right;font-size:13px;font-weight:bold;margin-top:4px;">
         합계: ${parseInt(o.total).toLocaleString()}원
