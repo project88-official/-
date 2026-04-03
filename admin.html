@@ -29,16 +29,27 @@
   .header { background: var(--green); color: white; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(45,106,79,0.3); }
   .header-title { font-size: 18px; font-weight: 900; }
   .header-date { font-size: 13px; opacity: 0.8; }
+  .header-right { display: flex; align-items: center; gap: 8px; }
   .logout-btn { padding: 6px 12px; background: rgba(255,255,255,0.2); border: none; border-radius: 8px; color: white; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 600; }
 
+  /* 프린터 연결 바 */
+  .printer-bar { background: #1a1a2e; color: white; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+  .printer-status { display: flex; align-items: center; gap: 8px; }
+  .printer-dot { width: 8px; height: 8px; border-radius: 50%; background: #666; flex-shrink: 0; }
+  .printer-dot.connected { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+  .printer-dot.connecting { background: #facc15; animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .printer-connect-btn { padding: 5px 14px; background: #4ade80; color: #1a1a2e; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .printer-connect-btn.disconnect { background: #f87171; color: white; }
+
   /* 브랜드 탭 */
-  .brand-tabs { display: flex; background: white; border-bottom: 2px solid var(--gray4); position: sticky; top: 57px; z-index: 99; }
+  .brand-tabs { display: flex; background: white; border-bottom: 2px solid var(--gray4); position: sticky; top: 104px; z-index: 99; }
   .brand-tab { flex: 1; padding: 14px 8px; text-align: center; font-size: 15px; font-weight: 700; color: var(--gray3); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
   .brand-tab.active-green { color: var(--green); border-bottom-color: var(--green); }
   .brand-tab.active-orange { color: var(--orange); border-bottom-color: var(--orange); }
 
   /* 서브 탭 */
-  .sub-tabs { display: flex; background: var(--gray5); border-bottom: 1px solid var(--gray4); position: sticky; top: 106px; z-index: 98; }
+  .sub-tabs { display: flex; background: var(--gray5); border-bottom: 1px solid var(--gray4); position: sticky; top: 153px; z-index: 98; }
   .sub-tab { flex: 1; padding: 10px 8px; text-align: center; font-size: 13px; font-weight: 600; color: var(--gray3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
   .sub-tab.active { color: var(--gray1); border-bottom-color: var(--gray1); }
 
@@ -63,8 +74,9 @@
   .badge-pay.orange { background: var(--orange-pale); color: var(--orange); }
   .badge-addr { background: var(--gray5); color: var(--gray2); font-size: 11px; }
   .order-items { font-size: 13px; color: var(--gray2); background: var(--gray5); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; line-height: 1.7; }
-  .order-footer { display: flex; justify-content: flex-end; }
+  .order-footer { display: flex; justify-content: flex-end; gap: 8px; }
   .print-btn { padding: 8px 20px; background: var(--gray1); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .print-btn:disabled { background: var(--gray3); cursor: not-allowed; }
 
   .refresh-btn { padding: 8px 16px; background: var(--green-pale); color: var(--green); border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; margin-bottom: 16px; }
   .refresh-btn.orange { background: var(--orange-pale); color: var(--orange); }
@@ -72,12 +84,11 @@
   .empty { text-align: center; padding: 60px 20px; color: var(--gray3); font-size: 15px; }
   .loading { text-align: center; padding: 40px; color: var(--gray3); font-size: 15px; }
 
-  @media print {
-    body * { visibility: hidden; }
-    #printArea, #printArea * { visibility: visible; }
-    #printArea { position: fixed; top: 0; left: 0; width: 58mm; }
-  }
-  #printArea { display: none; }
+  /* 토스트 알림 */
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1a1a2e; color: white; padding: 12px 24px; border-radius: 100px; font-size: 14px; font-weight: 600; z-index: 9999; transition: transform 0.3s ease; pointer-events: none; white-space: nowrap; }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.success { background: #16a34a; }
+  #toast.error { background: #dc2626; }
 </style>
 </head>
 <body>
@@ -98,7 +109,18 @@
       <div class="header-title">🥬 팔팔청과 관리자</div>
       <div class="header-date" id="headerDate"></div>
     </div>
-    <button class="logout-btn" onclick="logout()">로그아웃</button>
+    <div class="header-right">
+      <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+  </div>
+
+  <!-- 프린터 연결 바 -->
+  <div class="printer-bar">
+    <div class="printer-status">
+      <div class="printer-dot" id="printerDot"></div>
+      <span id="printerStatusText">프린터 연결 안됨</span>
+    </div>
+    <button class="printer-connect-btn" id="printerConnectBtn" onclick="togglePrinter()">🖨️ 프린터 연결</button>
   </div>
 
   <!-- 브랜드 탭 -->
@@ -144,13 +166,13 @@
   </div>
 </div>
 
-<div id="printArea"></div>
+<div id="toast"></div>
 
 <script>
 const API_KEY = 'AIzaSyBI8B9zk2kKdi9cZX3HHZXNKZr_48WtvQ8';
 const SHEET_IDS = [
-  '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q', // 팔팔청과
-  '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q'  // 성심당
+  '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q',
+  '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q'
 ];
 const BRAND_NAMES = ['팔팔청과', '성심당'];
 const PASSWORD = '515300';
@@ -158,6 +180,180 @@ let allOrders = [[], []];
 let currentBrand = 0;
 let currentSub = 0;
 
+// ── 프린터 관련 ──────────────────────────────────────────
+let serialPort = null;
+let serialWriter = null;
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  setTimeout(() => { t.className = ''; }, 2800);
+}
+
+function updatePrinterUI() {
+  const dot = document.getElementById('printerDot');
+  const txt = document.getElementById('printerStatusText');
+  const btn = document.getElementById('printerConnectBtn');
+  if (serialPort && serialWriter) {
+    dot.className = 'printer-dot connected';
+    txt.textContent = '프린터 연결됨 ✓';
+    btn.textContent = '연결 해제';
+    btn.className = 'printer-connect-btn disconnect';
+  } else {
+    dot.className = 'printer-dot';
+    txt.textContent = '프린터 연결 안됨';
+    btn.textContent = '🖨️ 프린터 연결';
+    btn.className = 'printer-connect-btn';
+  }
+}
+
+async function togglePrinter() {
+  if (serialPort && serialWriter) {
+    // 연결 해제
+    try {
+      await serialWriter.close();
+      await serialPort.close();
+    } catch(e) {}
+    serialWriter = null;
+    serialPort = null;
+    updatePrinterUI();
+    showToast('프린터 연결 해제됨');
+  } else {
+    // 연결 시도
+    if (!('serial' in navigator)) {
+      showToast('⚠️ Chrome에서만 지원됩니다', 'error');
+      return;
+    }
+    try {
+      const dot = document.getElementById('printerDot');
+      dot.className = 'printer-dot connecting';
+      document.getElementById('printerStatusText').textContent = '연결 중...';
+
+      serialPort = await navigator.serial.requestPort();
+      await serialPort.open({ baudRate: 9600 });
+      serialWriter = serialPort.writable.getWriter();
+      updatePrinterUI();
+      showToast('✅ 프린터 연결 성공!', 'success');
+    } catch(e) {
+      serialPort = null;
+      serialWriter = null;
+      updatePrinterUI();
+      if (e.name !== 'NotFoundError') {
+        showToast('연결 실패: ' + e.message, 'error');
+      }
+    }
+  }
+}
+
+// ── ESC/POS 명령어 ────────────────────────────────────────
+const ESC = 0x1B;
+const GS  = 0x1D;
+
+function textToBytes(str) {
+  // EUC-KR 대신 UTF-8 기반으로 Latin 범위 + 한글 처리
+  // XPrinter는 CP949 지원하므로 가능한 ASCII 위주로 처리
+  const encoder = new TextEncoder();
+  return encoder.encode(str);
+}
+
+function buildReceipt(o, brand) {
+  const cmds = [];
+
+  const push = (...bytes) => bytes.forEach(b => cmds.push(b));
+  const pushText = (str) => textToBytes(str).forEach(b => cmds.push(b));
+
+  // 초기화
+  push(ESC, 0x40);
+
+  // 한글 코드페이지 설정 (CP949)
+  push(ESC, 0x74, 0x0D); // code page EUC-KR
+
+  // ── 헤더: 가게 이름 (크게, 중앙) ──
+  push(ESC, 0x61, 0x01); // 중앙 정렬
+  push(ESC, 0x21, 0x30); // 2배 크기
+  pushText(brand === 1 ? '성심당 공구' : '팔팔청과');
+  push(0x0A);
+  push(ESC, 0x21, 0x00); // 일반 크기
+  pushText(o.date);
+  push(0x0A);
+
+  // 구분선
+  push(ESC, 0x61, 0x00); // 왼쪽 정렬
+  pushText('--------------------------------');
+  push(0x0A);
+
+  // ── 주문자 정보 ──
+  pushText('주문자: ' + o.name);       push(0x0A);
+  pushText('연락처: ' + o.phone);      push(0x0A);
+  pushText((o.method === '배송' ? '주  소: ' : '픽  업: ') + o.addrOrPickup); push(0x0A);
+  pushText('결  제: ' + o.payment);    push(0x0A);
+  pushText('방  법: ' + o.method);     push(0x0A);
+
+  // 구분선
+  pushText('--------------------------------');
+  push(0x0A);
+
+  // ── 상품 목록 ──
+  pushText('【 주문 상품 】');
+  push(0x0A);
+  o.items.split(',').map(i => i.trim()).forEach(item => {
+    if (item) { pushText('  ' + item); push(0x0A); }
+  });
+
+  // 요청사항
+  if (o.note) {
+    pushText('--------------------------------');
+    push(0x0A);
+    pushText('요청: ' + o.note);
+    push(0x0A);
+  }
+
+  // 구분선
+  pushText('================================');
+  push(0x0A);
+
+  // ── 합계 (크게, 오른쪽) ──
+  push(ESC, 0x61, 0x02); // 오른쪽 정렬
+  push(ESC, 0x21, 0x10); // 세로만 2배
+  pushText('합계: ' + parseInt(o.total).toLocaleString() + 'won');
+  push(0x0A);
+  push(ESC, 0x21, 0x00);
+  push(ESC, 0x61, 0x01); // 중앙
+
+  // ── 푸터 ──
+  push(0x0A);
+  pushText('감사합니다 :)');
+  push(0x0A);
+  pushText('팔팔청과');
+  push(0x0A); push(0x0A); push(0x0A); push(0x0A);
+
+  // 용지 자름 (Full cut)
+  push(GS, 0x56, 0x00);
+
+  return new Uint8Array(cmds);
+}
+
+async function printReceipt(idx, brand) {
+  const o = allOrders[brand].find(o => o.idx === idx);
+  if (!o) return;
+
+  if (!serialWriter) {
+    showToast('⚠️ 먼저 프린터를 연결해주세요', 'error');
+    return;
+  }
+
+  try {
+    showToast('🖨️ 인쇄 중...', '');
+    const data = buildReceipt(o, brand);
+    await serialWriter.write(data);
+    showToast('✅ 인쇄 완료!', 'success');
+  } catch(e) {
+    showToast('인쇄 실패: ' + e.message, 'error');
+  }
+}
+
+// ── 로그인 ────────────────────────────────────────────────
 function login() {
   const pw = document.getElementById('pwInput').value;
   if (pw === PASSWORD) {
@@ -182,6 +378,7 @@ function initMain() {
   const days = ['일','월','화','수','목','금','토'];
   document.getElementById('headerDate').textContent =
     `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
+  updatePrinterUI();
   loadOrders(0);
   loadOrders(1);
 }
@@ -286,35 +483,6 @@ function renderList(orders, containerId, brand) {
         </div>
       </div>`;
   }).join('');
-}
-
-function printReceipt(idx, brand) {
-  const o = allOrders[brand].find(o => o.idx === idx);
-  if (!o) return;
-  const itemLines = o.items.split(',').map(i => i.trim()).join('\n');
-  const div = '-'.repeat(32);
-  const brandLabel = brand === 1 ? '성심당 공구' : '팔팔청과';
-  document.getElementById('printArea').innerHTML = `
-    <div style="width:58mm;font-family:monospace;font-size:11px;padding:4px;color:#000;">
-      <div style="text-align:center;font-size:14px;font-weight:bold;margin-bottom:2px;">${brandLabel}</div>
-      <div style="text-align:center;font-size:10px;margin-bottom:6px;">${o.date}</div>
-      <div>${div}</div>
-      <div style="margin:4px 0;line-height:1.8;">
-        주문자: ${o.name}<br>
-        연락처: ${o.phone}<br>
-        ${o.method === '배송' ? '주소' : '픽업시간'}: ${o.addrOrPickup}<br>
-        결제: ${o.payment}
-      </div>
-      <div>${div}</div>
-      <div style="margin:4px 0;white-space:pre-line;line-height:1.8;">${itemLines}</div>
-      ${o.note ? `<div>${div}</div><div style="margin:4px 0;">요청: ${o.note}</div>` : ''}
-      <div>${div}</div>
-      <div style="text-align:right;font-size:13px;font-weight:bold;margin-top:4px;">
-        합계: ${parseInt(o.total).toLocaleString()}원
-      </div>
-      <div style="text-align:center;margin-top:10px;font-size:10px;">감사합니다</div>
-    </div>`;
-  window.print();
 }
 </script>
 </body>
