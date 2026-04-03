@@ -271,77 +271,124 @@ function eucKrEncode(str) {
   return bytes;
 }
 
-function buildReceipt(o, brand) {
-  const cmds = [];
+// ── Canvas → ESC/POS 비트맵 인쇄 ─────────────────────────
+// 58mm 프린터 = 384px 폭
+const PRINT_WIDTH = 384;
 
+function buildReceiptImage(o, brand) {
+  // 1) 영수증 내용 줄 목록 구성
+  const brandLabel = brand === 1 ? '성심당 공구' : '팔팔청과';
+  const lines = [];
+
+  lines.push({ text: brandLabel, size: 22, bold: true, align: 'center' });
+  lines.push({ text: o.date, size: 13, bold: false, align: 'center' });
+  lines.push({ text: '─'.repeat(28), size: 13, bold: false, align: 'left' });
+  lines.push({ text: '주문자: ' + o.name, size: 14, bold: true, align: 'left' });
+  lines.push({ text: '연락처: ' + o.phone, size: 13, bold: false, align: 'left' });
+  lines.push({ text: (o.method === '배송' ? '주  소: ' : '픽  업: ') + o.addrOrPickup, size: 13, bold: false, align: 'left' });
+  lines.push({ text: '결  제: ' + o.payment, size: 13, bold: false, align: 'left' });
+  lines.push({ text: '방  법: ' + o.method, size: 13, bold: false, align: 'left' });
+  lines.push({ text: '─'.repeat(28), size: 13, bold: false, align: 'left' });
+  lines.push({ text: '[ 주문 상품 ]', size: 14, bold: true, align: 'left' });
+
+  o.items.split(',').map(i => i.trim()).filter(Boolean).forEach(item => {
+    lines.push({ text: '  ' + item, size: 13, bold: false, align: 'left' });
+  });
+
+  if (o.note) {
+    lines.push({ text: '─'.repeat(28), size: 13, bold: false, align: 'left' });
+    lines.push({ text: '요청: ' + o.note, size: 13, bold: false, align: 'left' });
+  }
+
+  lines.push({ text: '━'.repeat(28), size: 13, bold: false, align: 'left' });
+  lines.push({ text: '합계: ' + parseInt(o.total).toLocaleString() + '원', size: 18, bold: true, align: 'right' });
+  lines.push({ text: '', size: 10, bold: false, align: 'left' });
+  lines.push({ text: '감사합니다 :)', size: 14, bold: false, align: 'center' });
+  lines.push({ text: '', size: 16, bold: false, align: 'left' });
+
+  // 2) Canvas에 그리기
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const padding = 8;
+  const contentWidth = PRINT_WIDTH - padding * 2;
+
+  // 높이 계산
+  let totalHeight = padding;
+  const lineHeights = lines.map(l => {
+    ctx.font = `${l.bold ? 'bold ' : ''}${l.size}px sans-serif`;
+    // 긴 줄 줄바꿈 처리
+    const words = l.text;
+    const lineH = l.size + 4;
+    // 대략적 높이 계산
+    totalHeight += lineH;
+    return lineH;
+  });
+  totalHeight += padding;
+
+  canvas.width = PRINT_WIDTH;
+  canvas.height = totalHeight;
+
+  // 흰 배경
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000000';
+
+  // 줄 그리기
+  let y = padding;
+  lines.forEach((l, i) => {
+    const lh = lineHeights[i];
+    ctx.font = `${l.bold ? 'bold ' : ''}${l.size}px sans-serif`;
+    let x = padding;
+    if (l.align === 'center') {
+      const w = ctx.measureText(l.text).width;
+      x = (PRINT_WIDTH - w) / 2;
+    } else if (l.align === 'right') {
+      const w = ctx.measureText(l.text).width;
+      x = PRINT_WIDTH - padding - w;
+    }
+    ctx.fillText(l.text, x, y + l.size);
+    y += lh;
+  });
+
+  // 3) Canvas → 1bit 비트맵 변환
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const pixels = imgData.data;
+  const h = canvas.height;
+  const w = canvas.width;
+
+  const cmds = [];
   const push = (...bytes) => bytes.forEach(b => cmds.push(b));
-  const pushText = (str) => eucKrEncode(str).forEach(b => cmds.push(b));
 
   // 초기화
   push(ESC, 0x40);
+  // 라인 간격 최소
+  push(ESC, 0x33, 0);
 
-  // 한글 코드페이지 설정 (CP949/EUC-KR)
-  push(ESC, 0x74, 0x0D);
+  // 8줄씩 래스터 비트맵 전송
+  for (let row = 0; row < h; row += 8) {
+    // ESC * 모드: m=0(8dot single density)
+    const bytesPerRow = Math.ceil(w / 8);
+    push(ESC, 0x2A, 0x00, bytesPerRow & 0xFF, (bytesPerRow >> 8) & 0xFF);
 
-  // ── 헤더: 가게 이름 (크게, 중앙) ──
-  push(ESC, 0x61, 0x01); // 중앙 정렬
-  push(ESC, 0x21, 0x30); // 2배 크기
-  pushText(brand === 1 ? '성심당 공구' : '팔팔청과');
-  push(0x0A);
-  push(ESC, 0x21, 0x00); // 일반 크기
-  pushText(o.date);
-  push(0x0A);
-
-  // 구분선
-  push(ESC, 0x61, 0x00); // 왼쪽 정렬
-  pushText('--------------------------------');
-  push(0x0A);
-
-  // ── 주문자 정보 ──
-  pushText('주문자: ' + o.name);       push(0x0A);
-  pushText('연락처: ' + o.phone);      push(0x0A);
-  pushText((o.method === '배송' ? '주  소: ' : '픽  업: ') + o.addrOrPickup); push(0x0A);
-  pushText('결  제: ' + o.payment);    push(0x0A);
-  pushText('방  법: ' + o.method);     push(0x0A);
-
-  // 구분선
-  pushText('--------------------------------');
-  push(0x0A);
-
-  // ── 상품 목록 ──
-  pushText('[ 주문 상품 ]');
-  push(0x0A);
-  o.items.split(',').map(i => i.trim()).forEach(item => {
-    if (item) { pushText('  ' + item); push(0x0A); }
-  });
-
-  // 요청사항
-  if (o.note) {
-    pushText('--------------------------------');
-    push(0x0A);
-    pushText('요청: ' + o.note);
+    for (let col = 0; col < w; col++) {
+      let byte = 0;
+      for (let bit = 0; bit < 8; bit++) {
+        const r2 = row + bit;
+        if (r2 < h) {
+          const idx = (r2 * w + col) * 4;
+          const bright = pixels[idx] * 0.299 + pixels[idx+1] * 0.587 + pixels[idx+2] * 0.114;
+          if (bright < 128) byte |= (0x80 >> bit);
+        }
+      }
+      cmds.push(byte);
+    }
     push(0x0A);
   }
 
-  // 구분선
-  pushText('================================');
-  push(0x0A);
-
-  // ── 합계 ──
-  push(ESC, 0x61, 0x02); // 오른쪽 정렬
-  push(ESC, 0x21, 0x10); // 세로 2배
-  pushText('합계: ' + parseInt(o.total).toLocaleString() + 'won');
-  push(0x0A);
-  push(ESC, 0x21, 0x00);
-  push(ESC, 0x61, 0x01); // 중앙
-
-  // ── 푸터 ──
-  push(0x0A);
-  pushText('감사합니다 :)');
-  push(0x0A);
-  push(0x0A); push(0x0A); push(0x0A); push(0x0A);
-
-  // 용지 자름
+  // 라인 간격 복원
+  push(ESC, 0x32);
+  // 용지 피드 & 자름
+  push(0x0A, 0x0A, 0x0A, 0x0A);
   push(GS, 0x56, 0x00);
 
   return new Uint8Array(cmds);
@@ -358,7 +405,7 @@ async function printReceipt(idx, brand) {
 
   try {
     showToast('🖨️ 인쇄 중...', '');
-    const data = buildReceipt(o, brand);
+    const data = buildReceiptImage(o, brand);
     await serialWriter.write(data);
     showToast('✅ 인쇄 완료!', 'success');
   } catch(e) {
