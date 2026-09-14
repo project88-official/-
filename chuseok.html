@@ -581,7 +581,7 @@ async function submitOrder() {
     await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData });
   } catch(e) { console.warn('시트 저장 실패:', e); }
 
-  localStorage.setItem('palpal_chuseok_order', JSON.stringify({ name, phone, addr, pickupTime, method: selectedMethod, payment: selectedPayment, total, items, date: now.toLocaleDateString('ko-KR'), note }));
+  localStorage.setItem('palpal_chuseok_order', JSON.stringify({ name, phone, addr, pickupTime, method: selectedMethod, payment: selectedPayment, total, items, date: now.toLocaleDateString('ko-KR'), note, recipientName, recipientPhone, recipientAddress }));
   window.location.href = 'chuseok_result.html';
 }
 
