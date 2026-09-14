@@ -326,6 +326,10 @@
     <div class="section-title">고객정보 (받으시는 분)</div>
   </div>
   <div class="form-fields">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <input type="checkbox" id="sameAsOrderer" style="width:18px; height:18px; accent-color:#f77f00; cursor:pointer;" onchange="copySameAsOrderer(this)">
+      <label for="sameAsOrderer" style="font-size:15px; font-weight:600; color:#495057; cursor:pointer;">주문자 정보와 동일</label>
+    </div>
     <div>
       <div class="field-label">주소 *</div>
       <input class="field-input" id="recipientAddress" type="text" placeholder="수령자 주소를 입력해 주세요">
@@ -486,6 +490,25 @@ function updateOrderBtn() {
   let ok = getTotal() > 0 && selectedMethod && selectedPayment && name && phone && recipientName && recipientPhone && recipientAddress;
   if (selectedMethod === 'delivery' || selectedMethod === 'parcel') ok = ok && !!addr;
   document.getElementById('orderBtn').disabled = !ok;
+}
+
+function copySameAsOrderer(checkbox) {
+  if (checkbox.checked) {
+    const name = document.getElementById('customerName').value.trim();
+    const phone = document.getElementById('customerPhone').value.trim();
+    const addr = document.getElementById('customerAddress').value.trim();
+    document.getElementById('recipientName').value = name;
+    document.getElementById('recipientPhone').value = phone || '010-';
+    document.getElementById('recipientAddress').value = addr;
+    document.getElementById('recipientName').disabled = true;
+    document.getElementById('recipientPhone').disabled = true;
+    document.getElementById('recipientAddress').disabled = true;
+  } else {
+    document.getElementById('recipientName').disabled = false;
+    document.getElementById('recipientPhone').disabled = false;
+    document.getElementById('recipientAddress').disabled = false;
+  }
+  updateOrderBtn();
 }
 
 document.getElementById('customerName').addEventListener('input', updateOrderBtn);
