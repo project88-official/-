@@ -320,7 +320,7 @@
 </div>
 
 <!-- 고객정보 (수령자) -->
-<div class="section">
+<div class="section" id="recipientSection">
   <div class="section-header">
     <div class="section-num">5</div>
     <div class="section-title">고객정보 (받으시는 분)</div>
@@ -470,6 +470,7 @@ function selectMethod(m) {
   document.getElementById('method-pickup').classList.toggle('active', m === 'pickup');
   document.getElementById('addressField').style.display = (m === 'delivery' || m === 'parcel') ? 'block' : 'none';
   document.getElementById('pickupTimeField').style.display = m === 'pickup' ? 'block' : 'none';
+  document.getElementById('recipientSection').style.display = m === 'pickup' ? 'none' : 'block';
   updateOrderBtn();
 }
 
@@ -487,7 +488,9 @@ function updateOrderBtn() {
   const recipientName = document.getElementById('recipientName').value.trim();
   const recipientPhone = document.getElementById('recipientPhone').value.trim();
   const recipientAddress = document.getElementById('recipientAddress').value.trim();
-  let ok = getTotal() > 0 && selectedMethod && selectedPayment && name && phone && recipientName && recipientPhone && recipientAddress;
+  const needRecipient = selectedMethod === 'delivery' || selectedMethod === 'parcel';
+  let ok = getTotal() > 0 && selectedMethod && selectedPayment && name && phone;
+  if (needRecipient) ok = ok && !!addr && !!recipientName && !!recipientPhone && !!recipientAddress;
   if (selectedMethod === 'delivery' || selectedMethod === 'parcel') ok = ok && !!addr;
   document.getElementById('orderBtn').disabled = !ok;
 }
