@@ -461,7 +461,7 @@ function getDeliveryFee() {
   if (selectedMethod !== 'parcel') return 0;
   // LA갈비 제외한 품목 수량 합계
   const totalQty = products.reduce((sum, p, i) => {
-    if (p.name.includes('LA갈비')) return sum;
+    if (p.name.includes('LA갈비') || p.name.includes('LA 갈비')) return sum;
     return sum + (quantities[i] || 0);
   }, 0);
   return totalQty * 4000;
@@ -472,7 +472,7 @@ function getTotalWithFee() {
 }
 
 function updateTotal() {
-  const total = getTotalWithFee();
+  const total = getTotal();
   const fee = getDeliveryFee();
   const totalWithFee = total + fee;
   const fmt = totalWithFee.toLocaleString() + '원';
