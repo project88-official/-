@@ -251,7 +251,7 @@
   <div class="method-options">
     <div class="method-btn" id="method-delivery" onclick="selectMethod('delivery')">
       <div class="method-icon">🚚</div>
-      <div class="method-label">배송</div>
+      <div class="method-label">배송/택배</div>
       <div class="method-sub">주소 입력 필요</div>
     </div>
     <div class="method-btn" id="method-pickup" onclick="selectMethod('pickup')">
@@ -288,7 +288,7 @@
 <div class="section">
   <div class="section-header">
     <div class="section-num">4</div>
-    <div class="section-title">고객정보</div>
+    <div class="section-title">고객정보 (결제자)</div>
   </div>
   <div class="form-fields">
     <div>
@@ -314,10 +314,32 @@
   </div>
 </div>
 
-<!-- 기타요청사항 -->
+<!-- 고객정보 (수령자) -->
 <div class="section">
   <div class="section-header">
     <div class="section-num">5</div>
+    <div class="section-title">고객정보 (수령자)</div>
+  </div>
+  <div class="form-fields">
+    <div>
+      <div class="field-label">성함 *</div>
+      <input class="field-input" id="recipientName" type="text" placeholder="수령자 성함을 입력해 주세요">
+    </div>
+    <div>
+      <div class="field-label">연락처 *</div>
+      <input class="field-input" id="recipientPhone" type="tel" placeholder="010-0000-0000" value="010-" maxlength="13">
+    </div>
+    <div>
+      <div class="field-label">주소 *</div>
+      <input class="field-input" id="recipientAddress" type="text" placeholder="수령자 주소를 입력해 주세요">
+    </div>
+  </div>
+</div>
+
+<!-- 기타요청사항 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">6</div>
     <div class="section-title">기타요청사항</div>
   </div>
   <div class="form-fields">
@@ -452,13 +474,26 @@ function updateOrderBtn() {
   const name = document.getElementById('customerName').value.trim();
   const phone = document.getElementById('customerPhone').value.trim();
   const addr = document.getElementById('customerAddress').value.trim();
-  let ok = getTotal() > 0 && selectedMethod && selectedPayment && name && phone;
+  const recipientName = document.getElementById('recipientName').value.trim();
+  const recipientPhone = document.getElementById('recipientPhone').value.trim();
+  const recipientAddress = document.getElementById('recipientAddress').value.trim();
+  let ok = getTotal() > 0 && selectedMethod && selectedPayment && name && phone && recipientName && recipientPhone && recipientAddress;
   if (selectedMethod === 'delivery') ok = ok && !!addr;
   document.getElementById('orderBtn').disabled = !ok;
 }
 
 document.getElementById('customerName').addEventListener('input', updateOrderBtn);
 document.getElementById('customerAddress').addEventListener('input', updateOrderBtn);
+document.getElementById('recipientName').addEventListener('input', updateOrderBtn);
+document.getElementById('recipientAddress').addEventListener('input', updateOrderBtn);
+document.getElementById('recipientPhone').addEventListener('input', function(e) {
+  let val = e.target.value.replace(/[^0-9]/g, '');
+  if (!val.startsWith('010')) val = '010' + val.replace(/^010/, '');
+  if (val.length <= 3) e.target.value = '010-';
+  else if (val.length <= 7) e.target.value = '010-' + val.slice(3);
+  else e.target.value = '010-' + val.slice(3, 7) + '-' + val.slice(7, 11);
+  updateOrderBtn();
+});
 document.getElementById('customerPhone').addEventListener('input', function(e) {
   let val = e.target.value.replace(/[^0-9]/g, '');
   if (!val.startsWith('010')) val = '010' + val.replace(/^010/, '');
@@ -479,6 +514,9 @@ async function submitOrder() {
   const addr = document.getElementById('customerAddress').value.trim();
   const pickupTime = document.getElementById('customerPickupTime').value.trim();
   const note = document.getElementById('customerNote').value.trim();
+  const recipientName = document.getElementById('recipientName').value.trim();
+  const recipientPhone = document.getElementById('recipientPhone').value.trim();
+  const recipientAddress = document.getElementById('recipientAddress').value.trim();
 
   if (document.getElementById('saveInfoCheck').checked) {
     localStorage.setItem('palpal_chuseok_customer', JSON.stringify({ name, phone, addr }));
@@ -506,6 +544,9 @@ async function submitOrder() {
     formData.append('items', itemSummary);
     formData.append('total', total);
     formData.append('note', note);
+    formData.append('recipientName', recipientName);
+    formData.append('recipientPhone', recipientPhone);
+    formData.append('recipientAddress', recipientAddress);
     formData.append('source', 'chuseok');
 
     await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData });
