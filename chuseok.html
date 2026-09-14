@@ -373,7 +373,7 @@
 <script>
 const API_KEY = 'AIzaSyBI8B9zk2kKdi9cZX3HHZXNKZr_48WtvQ8';
 const SHEET_ID_PRODUCTS = '1CPH7pDKz-GSVLPZ9XTepznPZNGaRAVFs8VAHc_9JjqQ';
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzlNesFn4TIda2axuQgaXyz9juwualg_V7BymSP1wJ4ntg8_aVJwYn-jZMO9gzKbPPGNQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyzEwSPZ-0j3J0lgam3nsK2K3ZV3hmeT4jL2UEEyR3enUKocT8KlPMvpY9wl1QPCtQ4qw/exec';
 
 let products = [];
 const quantities = {};
@@ -554,7 +554,7 @@ async function submitOrder() {
   }
 
   const items = products
-    .map((p, i) => ({ ...p, qty: quantities[i] || 0 }))
+    .map((p, i) => ({ ...p, qty: quantities[i] || 0, subtotal: p.price * (quantities[i] || 0) }))
     .filter(p => p.qty > 0);
 
   const itemSummary = items.map(i => `${i.name}×${i.qty}`).join(', ');
