@@ -184,6 +184,10 @@
       </tr>
     </thead>
     <tbody id="itemTableBody"></tbody>
+    <tr id="deliveryFeeRow" style="display:none">
+      <td colspan="3" style="padding:8px;font-size:14px;color:#c62828;font-weight:600;">택배비</td>
+      <td class="text-right" style="padding:8px;font-size:14px;color:#c62828;font-weight:600;" id="deliveryFeeCell"></td>
+    </tr>
     <tr class="total-row">
       <td colspan="3" class="total-label">발주 총액</td>
       <td class="total-amount" id="totalAmountCell"></td>
@@ -270,6 +274,17 @@ const tbody = document.getElementById('itemTableBody');
   `;
   tbody.appendChild(tr);
 });
+// 택배비 계산 (LA갈비 제외 수량 합계 × 4000)
+const items = order.items || [];
+let deliveryFee = 0;
+if (order.method === 'parcel') {
+  const nonLAQty = items.filter(i => !i.name.includes('LA갈비')).reduce((sum, i) => sum + i.qty, 0);
+  deliveryFee = nonLAQty * 4000;
+}
+if (deliveryFee > 0) {
+  document.getElementById('deliveryFeeRow').style.display = '';
+  document.getElementById('deliveryFeeCell').textContent = deliveryFee.toLocaleString() + '원';
+}
 document.getElementById('totalAmountCell').textContent = (order.total || 0).toLocaleString() + '원';
 
 // 결제하시는 분
