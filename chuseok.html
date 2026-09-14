@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>팔팔청과 추석선물세트</title>
+
+<style>
+  :root {
+    --green: #2d6a4f;
+    --green-light: #52b788;
+    --green-pale: #d8f3dc;
+    --accent: #f77f00;
+    --bg: #f8f9fa;
+    --white: #ffffff;
+    --gray1: #212529;
+    --gray2: #495057;
+    --gray3: #868e96;
+    --gray4: #dee2e6;
+    --gray5: #f1f3f5;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--gray1);
+    min-height: 100vh;
+    padding-bottom: 120px;
+  }
+
+  .header {
+    background: #ffffff;
+    color: var(--gray1);
+    padding: 4px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-bottom: 3px solid #f77f00;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .store-name {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: #212529;
+  }
+  .store-sub {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .today-date {
+    font-size: 13px;
+    color: var(--gray3);
+    margin-top: 0;
+  }
+  .header-total { text-align: right; }
+  .header-total-label { font-size: 12px; color: var(--gray3); }
+  .header-total-amount {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: -1px;
+    white-space: nowrap;
+  }
+
+  .section {
+    margin: 16px 16px 0;
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--gray5);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-num {
+    width: 22px;
+    height: 22px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--gray1);
+  }
+
+  .product-list { padding: 8px 0 4px; }
+  .product-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray5);
+    gap: 12px;
+    transition: background 0.15s;
+  }
+  .product-item:last-child { border-bottom: none; }
+  .product-item.selected { background: #fff3e0; }
+  .product-name { font-size: 19px; font-weight: 600; color: var(--gray1); margin-bottom: 3px; }
+  .product-meta {
+    font-size: 14px;
+    color: var(--gray3);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .product-meta-dot { width: 2px; height: 2px; background: var(--gray4); border-radius: 50%; }
+  .product-price { font-size: 19px; font-weight: 700; color: var(--accent); margin-top: 4px; }
+  .product-subtotal { font-size: 16px; color: var(--green); font-weight: 600; margin-top: 2px; min-height: 16px; }
+
+  .qty-stepper {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--gray4);
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    transition: border-color 0.2s;
+  }
+  .qty-stepper.has-value { border-color: var(--accent); background: #fff3e0; }
+  .qty-btn {
+    width: 32px; height: 36px; border: none; background: transparent;
+    font-size: 25px; font-weight: 300; color: var(--gray2);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s; flex-shrink: 0;
+  }
+  .qty-btn:active { background: var(--gray4); }
+  .qty-num {
+    width: 36px; text-align: center; font-size: 19px; font-weight: 700; color: var(--gray1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .qty-stepper.has-value .qty-num { color: var(--accent); }
+
+  .method-options {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; padding: 14px 16px;
+  }
+  .method-btn {
+    padding: 14px; border-radius: 10px; border: 2px solid var(--gray4);
+    background: white; cursor: pointer; text-align: center; transition: all 0.2s;
+  }
+  .method-btn.active { border-color: var(--accent); background: #fff3e0; }
+  .method-icon { font-size: 30px; margin-bottom: 4px; }
+  .method-label { font-size: 19px; font-weight: 700; color: var(--gray2); }
+  .method-btn.active .method-label { color: var(--accent); }
+  .method-sub { font-size: 16px; color: var(--gray3); margin-top: 2px; }
+
+  .payment-options {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px; padding: 14px 16px;
+  }
+  .payment-btn {
+    padding: 12px 6px; border-radius: 10px; border: 2px solid var(--gray4);
+    background: white; cursor: pointer; text-align: center; transition: all 0.2s;
+  }
+  .payment-btn.active { border-color: var(--accent); background: #fff3e0; }
+  .payment-icon { font-size: 30px; margin-bottom: 4px; }
+  .payment-label { font-size: 16px; font-weight: 700; color: var(--gray2); line-height: 1.3; }
+  .payment-btn.active .payment-label { color: var(--accent); }
+
+  .form-fields { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .field-label { font-size: 19px; font-weight: 600; color: var(--gray2); margin-bottom: 5px; }
+  .field-input {
+    width: 100%; padding: 12px 14px; border: 1.5px solid var(--gray4);
+    border-radius: 8px; font-size: 22px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--gray1); transition: border-color 0.2s; background: white;
+  }
+  .field-input:focus { outline: none; border-color: var(--accent); }
+  .field-input::placeholder { color: var(--gray3); }
+
+  .order-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: white; border-top: 1px solid var(--gray4);
+    padding: 12px 16px; z-index: 200;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  }
+  .order-bar-inner {
+    display: flex; align-items: center; gap: 12px;
+    max-width: 480px; margin: 0 auto;
+  }
+  .order-total-wrap { flex: 1; }
+  .order-total-label { font-size: 16px; color: var(--gray3); }
+  .order-total-amount { font-size: 30px; font-weight: 900; color: var(--gray1); letter-spacing: -1px; }
+  .order-btn {
+    padding: 14px 28px; background: var(--accent); color: white; border: none;
+    border-radius: 10px; font-size: 22px; font-weight: 700;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .order-btn:disabled { background: var(--gray4); color: var(--gray3); cursor: not-allowed; }
+  .order-btn:not(:disabled):active { transform: scale(0.97); background: #d46b00; }
+
+  .empty-tab { padding: 32px 16px; text-align: center; color: var(--gray3); font-size: 19px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="store-name">🎁 팔팔청과</div>
+      <div class="store-sub">추석선물세트 발주서</div>
+      <div class="today-date" id="todayDate"></div>
+    </div>
+    <div class="header-total">
+      <div class="header-total-label">현재 합계</div>
+      <div class="header-total-amount" id="headerTotal">0원</div>
+    </div>
+  </div>
+</div>
+
+<!-- 품목/수량 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div class="section-title">품목 및 수량 선택</div>
+  </div>
+  <div id="cat-0" class="product-list"></div>
+</div>
+
+<!-- 수령방법 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div class="section-title">수령방법</div>
+  </div>
+  <div class="method-options">
+    <div class="method-btn" id="method-delivery" onclick="selectMethod('delivery')">
+      <div class="method-icon">🚚</div>
+      <div class="method-label">배송</div>
+      <div class="method-sub">주소 입력 필요</div>
+    </div>
+    <div class="method-btn" id="method-pickup" onclick="selectMethod('pickup')">
+      <div class="method-icon">🏪</div>
+      <div class="method-label">픽업</div>
+      <div class="method-sub">매장 직접 수령</div>
+    </div>
+  </div>
+</div>
+
+<!-- 결제수단 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div class="section-title">결제수단</div>
+  </div>
+  <div class="payment-options">
+    <div class="payment-btn" id="pay-card" onclick="selectPayment('card')">
+      <div class="payment-icon">💳</div>
+      <div class="payment-label">카드결제</div>
+    </div>
+    <div class="payment-btn" id="pay-seoul" onclick="selectPayment('seoul')">
+      <div class="payment-icon">🏙️</div>
+      <div class="payment-label">서울페이</div>
+    </div>
+    <div class="payment-btn" id="pay-transfer" onclick="selectPayment('transfer')">
+      <div class="payment-icon">🏦</div>
+      <div class="payment-label">계좌이체</div>
+    </div>
+  </div>
+</div>
+
+<!-- 고객정보 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <div class="section-title">고객정보</div>
+  </div>
+  <div class="form-fields">
+    <div>
+      <div class="field-label">주문자명 *</div>
+      <input class="field-input" id="customerName" type="text" placeholder="주문자명을 입력해 주세요">
+    </div>
+    <div id="addressField" style="display:none">
+      <div class="field-label">주소 *</div>
+      <input class="field-input" id="customerAddress" type="text" placeholder="아파트는 아파트명/동/호수만 써주세요">
+    </div>
+    <div>
+      <div class="field-label">연락처 *</div>
+      <input class="field-input" id="customerPhone" type="tel" placeholder="010-0000-0000" value="010-" maxlength="13">
+    </div>
+    <div id="pickupTimeField" style="display:none">
+      <div class="field-label">픽업 예상시간</div>
+      <input class="field-input" id="customerPickupTime" type="text" placeholder="예) 오후 2시, 18:00 등">
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+      <input type="checkbox" id="saveInfoCheck" style="width:18px; height:18px; accent-color:#f77f00; cursor:pointer;">
+      <label for="saveInfoCheck" style="font-size:14px; color:#555; cursor:pointer;">다음에도 이 정보 사용하기</label>
+    </div>
+  </div>
+</div>
+
+<!-- 기타요청사항 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <div class="section-title">기타요청사항</div>
+  </div>
+  <div class="form-fields">
+    <div>
+      <div class="field-label" style="color:var(--gray3)">선택사항 · 자유롭게 입력해 주세요</div>
+      <textarea class="field-input" id="customerNote" placeholder="요청사항을 입력해 주세요" style="resize:none; height:100px; line-height:1.6;"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- 하단 주문 바 -->
+<div class="order-bar">
+  <div class="order-bar-inner">
+    <div class="order-total-wrap">
+      <div class="order-total-label">총 주문금액</div>
+      <div class="order-total-amount" id="bottomTotal">0원</div>
+    </div>
+    <button class="order-btn" id="orderBtn" onclick="submitOrder()" disabled>주문하기</button>
+  </div>
+</div>
+
+<script>
+const API_KEY = 'AIzaSyBI8B9zk2kKdi9cZX3HHZXNKZr_48WtvQ8';
+const SHEET_ID_PRODUCTS = '1CPH7pDKz-GSVLPZ9XTepznPZNGaRAVFs8VAHc_9JjqQ';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzlNesFn4TIda2axuQgaXyz9juwualg_V7BymSP1wJ4ntg8_aVJwYn-jZMO9gzKbPPGNQ/exec';
+
+let products = [];
+const quantities = {};
+let selectedMethod = null;
+let selectedPayment = null;
+
+const now = new Date();
+const days = ['일','월','화','수','목','금','토'];
+document.getElementById('todayDate').textContent =
+  `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
+
+async function loadProducts() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID_PRODUCTS}/values/추석선물세트!A2:F100?key=${API_KEY}`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.values) { showLoadError(); return; }
+    products = data.values
+      .filter(row => row[1])
+      .map(row => ({
+        name: row[1] || '',
+        unit: row[2] || '',
+        weight: row[3] || '',
+        price: parseInt((row[4] || '0').toString().replace(/,/g, '')),
+      }))
+      .filter(p => p.name && p.price > 0);
+    renderProducts();
+  } catch(e) { showLoadError(); }
+}
+
+function showLoadError() {
+  document.getElementById('cat-0').innerHTML =
+    '<div class="empty-tab">⚠️ 품목을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</div>';
+}
+
+function renderProducts() {
+  const list = document.getElementById('cat-0');
+  if (!products.length) { list.innerHTML = '<div class="empty-tab">등록된 품목이 없습니다</div>'; return; }
+  list.innerHTML = products.map((p, i) => `
+    <div class="product-item" id="item-${i}">
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-meta">
+          <span>${p.unit}</span>
+          ${p.weight ? `<span class="product-meta-dot"></span><span>${p.weight}</span>` : ''}
+        </div>
+        <div class="product-price">${p.price.toLocaleString()}원</div>
+        <div class="product-subtotal" id="sub-${i}"></div>
+      </div>
+      <div class="qty-stepper" id="stepper-${i}">
+        <button class="qty-btn" onclick="changeQty(${i}, -1)">−</button>
+        <span class="qty-num" id="qty-${i}">0</span>
+        <button class="qty-btn" onclick="changeQty(${i}, 1)">+</button>
+      </div>
+    </div>`).join('');
+}
+
+function changeQty(i, delta) {
+  const current = quantities[i] || 0;
+  const qty = Math.max(0, Math.min(99, current + delta));
+  quantities[i] = qty;
+  const p = products[i];
+  document.getElementById(`qty-${i}`).textContent = qty;
+  const stepperEl = document.getElementById(`stepper-${i}`);
+  const subEl = document.getElementById(`sub-${i}`);
+  const itemEl = document.getElementById(`item-${i}`);
+  if (qty > 0) {
+    subEl.textContent = `소계: ${(p.price * qty).toLocaleString()}원`;
+    stepperEl.classList.add('has-value');
+    itemEl.classList.add('selected');
+  } else {
+    subEl.textContent = '';
+    stepperEl.classList.remove('has-value');
+    itemEl.classList.remove('selected');
+  }
+  updateTotal();
+}
+
+function getTotal() {
+  return products.reduce((sum, p, i) => sum + p.price * (quantities[i] || 0), 0);
+}
+
+function updateTotal() {
+  const fmt = getTotal().toLocaleString() + '원';
+  document.getElementById('headerTotal').textContent = fmt;
+  document.getElementById('bottomTotal').textContent = fmt;
+  updateOrderBtn();
+}
+
+function selectMethod(m) {
+  selectedMethod = m;
+  document.getElementById('method-delivery').classList.toggle('active', m === 'delivery');
+  document.getElementById('method-pickup').classList.toggle('active', m === 'pickup');
+  document.getElementById('addressField').style.display = m === 'delivery' ? 'block' : 'none';
+  document.getElementById('pickupTimeField').style.display = m === 'pickup' ? 'block' : 'none';
+  updateOrderBtn();
+}
+
+function selectPayment(p) {
+  selectedPayment = p;
+  ['card','seoul','transfer'].forEach(k =>
+    document.getElementById(`pay-${k}`).classList.toggle('active', k === p));
+  updateOrderBtn();
+}
+
+function updateOrderBtn() {
+  const name = document.getElementById('customerName').value.trim();
+  const phone = document.getElementById('customerPhone').value.trim();
+  const addr = document.getElementById('customerAddress').value.trim();
+  let ok = getTotal() > 0 && selectedMethod && selectedPayment && name && phone;
+  if (selectedMethod === 'delivery') ok = ok && !!addr;
+  document.getElementById('orderBtn').disabled = !ok;
+}
+
+document.getElementById('customerName').addEventListener('input', updateOrderBtn);
+document.getElementById('customerAddress').addEventListener('input', updateOrderBtn);
+document.getElementById('customerPhone').addEventListener('input', function(e) {
+  let val = e.target.value.replace(/[^0-9]/g, '');
+  if (!val.startsWith('010')) val = '010' + val.replace(/^010/, '');
+  if (val.length <= 3) e.target.value = '010-';
+  else if (val.length <= 7) e.target.value = '010-' + val.slice(3);
+  else e.target.value = '010-' + val.slice(3, 7) + '-' + val.slice(7, 11);
+  updateOrderBtn();
+});
+
+async function submitOrder() {
+  const btn = document.getElementById('orderBtn');
+  btn.disabled = true;
+  btn.textContent = '처리 중...';
+
+  const total = getTotal();
+  const name = document.getElementById('customerName').value.trim();
+  const phone = document.getElementById('customerPhone').value.trim();
+  const addr = document.getElementById('customerAddress').value.trim();
+  const pickupTime = document.getElementById('customerPickupTime').value.trim();
+  const note = document.getElementById('customerNote').value.trim();
+
+  if (document.getElementById('saveInfoCheck').checked) {
+    localStorage.setItem('palpal_chuseok_customer', JSON.stringify({ name, phone, addr }));
+  } else {
+    localStorage.removeItem('palpal_chuseok_customer');
+  }
+
+  const items = products
+    .map((p, i) => ({ ...p, qty: quantities[i] || 0 }))
+    .filter(p => p.qty > 0);
+
+  const itemSummary = items.map(i => `${i.name}×${i.qty}`).join(', ');
+  const methodText = selectedMethod === 'delivery' ? '배송' : '픽업';
+  const payText = selectedPayment === 'card' ? '카드결제' : selectedPayment === 'seoul' ? '서울페이' : '계좌이체';
+  const dateStr = now.toLocaleDateString('ko-KR') + ' ' + now.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
+
+  try {
+    const formData = new FormData();
+    formData.append('date', dateStr);
+    formData.append('name', name);
+    formData.append('phone', phone);
+    formData.append('method', methodText);
+    formData.append('addrOrPickup', selectedMethod === 'delivery' ? addr : pickupTime);
+    formData.append('payment', payText);
+    formData.append('items', itemSummary);
+    formData.append('total', total);
+    formData.append('note', note);
+    formData.append('source', 'chuseok');
+
+    await fetch(APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: formData });
+  } catch(e) { console.warn('시트 저장 실패:', e); }
+
+  localStorage.setItem('palpal_chuseok_order', JSON.stringify({ name, phone, addr, pickupTime, method: selectedMethod, payment: selectedPayment, total, items, date: now.toLocaleDateString('ko-KR'), note }));
+  window.location.href = 'chuseok_result.html';
+}
+
+loadProducts();
+
+(function() {
+  const saved = localStorage.getItem('palpal_chuseok_customer');
+  if (saved) {
+    const info = JSON.parse(saved);
+    document.getElementById('customerName').value = info.name || '';
+    document.getElementById('customerPhone').value = info.phone || '010-';
+    document.getElementById('customerAddress').value = info.addr || '';
+    document.getElementById('saveInfoCheck').checked = true;
+  }
+})();
+</script>
+</body>
+</html>
