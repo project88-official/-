@@ -248,10 +248,15 @@
     <div class="section-num">2</div>
     <div class="section-title">수령방법</div>
   </div>
-  <div class="method-options">
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:14px 16px;">
     <div class="method-btn" id="method-delivery" onclick="selectMethod('delivery')">
       <div class="method-icon">🚚</div>
-      <div class="method-label">배송/택배</div>
+      <div class="method-label">배송</div>
+      <div class="method-sub">주소 입력 필요</div>
+    </div>
+    <div class="method-btn" id="method-parcel" onclick="selectMethod('parcel')">
+      <div class="method-icon">📦</div>
+      <div class="method-label">택배</div>
       <div class="method-sub">주소 입력 필요</div>
     </div>
     <div class="method-btn" id="method-pickup" onclick="selectMethod('pickup')">
@@ -288,7 +293,7 @@
 <div class="section">
   <div class="section-header">
     <div class="section-num">4</div>
-    <div class="section-title">고객정보 (결제자)</div>
+    <div class="section-title">고객정보 (결제하시는 분)</div>
   </div>
   <div class="form-fields">
     <div>
@@ -318,9 +323,13 @@
 <div class="section">
   <div class="section-header">
     <div class="section-num">5</div>
-    <div class="section-title">고객정보 (수령자)</div>
+    <div class="section-title">고객정보 (받으시는 분)</div>
   </div>
   <div class="form-fields">
+    <div>
+      <div class="field-label">주소 *</div>
+      <input class="field-input" id="recipientAddress" type="text" placeholder="수령자 주소를 입력해 주세요">
+    </div>
     <div>
       <div class="field-label">성함 *</div>
       <input class="field-input" id="recipientName" type="text" placeholder="수령자 성함을 입력해 주세요">
@@ -328,10 +337,6 @@
     <div>
       <div class="field-label">연락처 *</div>
       <input class="field-input" id="recipientPhone" type="tel" placeholder="010-0000-0000" value="010-" maxlength="13">
-    </div>
-    <div>
-      <div class="field-label">주소 *</div>
-      <input class="field-input" id="recipientAddress" type="text" placeholder="수령자 주소를 입력해 주세요">
     </div>
   </div>
 </div>
@@ -457,8 +462,9 @@ function updateTotal() {
 function selectMethod(m) {
   selectedMethod = m;
   document.getElementById('method-delivery').classList.toggle('active', m === 'delivery');
+  document.getElementById('method-parcel').classList.toggle('active', m === 'parcel');
   document.getElementById('method-pickup').classList.toggle('active', m === 'pickup');
-  document.getElementById('addressField').style.display = m === 'delivery' ? 'block' : 'none';
+  document.getElementById('addressField').style.display = (m === 'delivery' || m === 'parcel') ? 'block' : 'none';
   document.getElementById('pickupTimeField').style.display = m === 'pickup' ? 'block' : 'none';
   updateOrderBtn();
 }
@@ -478,7 +484,7 @@ function updateOrderBtn() {
   const recipientPhone = document.getElementById('recipientPhone').value.trim();
   const recipientAddress = document.getElementById('recipientAddress').value.trim();
   let ok = getTotal() > 0 && selectedMethod && selectedPayment && name && phone && recipientName && recipientPhone && recipientAddress;
-  if (selectedMethod === 'delivery') ok = ok && !!addr;
+  if (selectedMethod === 'delivery' || selectedMethod === 'parcel') ok = ok && !!addr;
   document.getElementById('orderBtn').disabled = !ok;
 }
 
@@ -529,7 +535,7 @@ async function submitOrder() {
     .filter(p => p.qty > 0);
 
   const itemSummary = items.map(i => `${i.name}×${i.qty}`).join(', ');
-  const methodText = selectedMethod === 'delivery' ? '배송' : '픽업';
+  const methodText = selectedMethod === 'delivery' ? '배송' : selectedMethod === 'parcel' ? '택배' : '픽업';
   const payText = selectedPayment === 'card' ? '카드결제' : selectedPayment === 'seoul' ? '서울페이' : '계좌이체';
   const dateStr = now.toLocaleDateString('ko-KR') + ' ' + now.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
 
