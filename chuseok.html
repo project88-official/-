@@ -258,6 +258,7 @@
       <div class="method-icon">📦</div>
       <div class="method-label">택배</div>
       <div class="method-sub">09/18(금) 일괄배송</div>
+      <div class="method-sub" style="color:#c62828;font-size:12px;margin-top:2px;">택배비 건당 4,000원 별도 (LA갈비 제외)</div>
     </div>
     <div class="method-btn" id="method-pickup" onclick="selectMethod('pickup')">
       <div class="method-icon">🏪</div>
@@ -456,10 +457,30 @@ function getTotal() {
   return products.reduce((sum, p, i) => sum + p.price * (quantities[i] || 0), 0);
 }
 
+function getDeliveryFee() {
+  if (selectedMethod !== 'parcel') return 0;
+  // LA갈비 제외한 품목 수량 합계
+  const totalQty = products.reduce((sum, p, i) => {
+    if (p.name.includes('LA갈비')) return sum;
+    return sum + (quantities[i] || 0);
+  }, 0);
+  return totalQty * 4000;
+}
+
+function getTotalWithFee() {
+  return getTotal() + getDeliveryFee();
+}
+
 function updateTotal() {
-  const fmt = getTotal().toLocaleString() + '원';
+  const total = getTotalWithFee();
+  const fee = getDeliveryFee();
+  const totalWithFee = total + fee;
+  const fmt = totalWithFee.toLocaleString() + '원';
   document.getElementById('headerTotal').textContent = fmt;
   document.getElementById('bottomTotal').textContent = fmt;
+  if (fee > 0) {
+    document.getElementById('bottomTotal').title = `상품 ${total.toLocaleString()}원 + 택배비 ${fee.toLocaleString()}원`;
+  }
   updateOrderBtn();
 }
 
@@ -471,6 +492,7 @@ function selectMethod(m) {
   document.getElementById('addressField').style.display = (m === 'delivery' || m === 'parcel') ? 'block' : 'none';
   document.getElementById('pickupTimeField').style.display = m === 'pickup' ? 'block' : 'none';
   document.getElementById('recipientSection').style.display = m === 'pickup' ? 'none' : 'block';
+  updateTotal();
   updateOrderBtn();
 }
 
@@ -540,7 +562,7 @@ async function submitOrder() {
   btn.disabled = true;
   btn.textContent = '처리 중...';
 
-  const total = getTotal();
+  const total = getTotalWithFee();
   const name = document.getElementById('customerName').value.trim();
   const phone = document.getElementById('customerPhone').value.trim();
   const addr = document.getElementById('customerAddress').value.trim();
