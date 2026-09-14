@@ -124,8 +124,7 @@
   <!-- 브랜드 탭 -->
   <div class="brand-tabs">
     <div class="brand-tab active-green" onclick="switchBrand(0)">🥬 팔팔청과 발주</div>
-    <div class="brand-tab" onclick="switchBrand(1)">🍞 성심당 공구</div>
-    <div class="brand-tab" onclick="switchBrand(2)">🎁 추석선물세트</div>
+    <div class="brand-tab" onclick="switchBrand(1)">🎁 추석선물세트</div>
   </div>
 
   <!-- 서브 탭 -->
@@ -149,34 +148,19 @@
     <div id="allList0"><div class="loading">불러오는 중...</div></div>
   </div>
 
-  <!-- 성심당 오늘 주문 -->
+  <!-- 추석선물세트 오늘 주문 -->
   <div id="panel-1-0" class="content" style="display:none">
     <div class="stats-grid" id="statsGrid1"></div>
-    <button class="refresh-btn orange" onclick="loadOrders(1)">↻ 새로고침</button>
+    <button class="refresh-btn" style="background:#fce4ec;color:#c62828;" onclick="loadOrders(1)">↻ 새로고침</button>
     <div class="section-title">오늘 주문 목록</div>
     <div id="todayList1"><div class="loading">불러오는 중...</div></div>
   </div>
 
-  <!-- 성심당 전체 주문 -->
+  <!-- 추석선물세트 전체 주문 -->
   <div id="panel-1-1" class="content" style="display:none">
-    <button class="refresh-btn orange" onclick="loadOrders(1)">↻ 새로고침</button>
+    <button class="refresh-btn" style="background:#fce4ec;color:#c62828;" onclick="loadOrders(1)">↻ 새로고침</button>
     <div class="section-title">전체 주문 내역</div>
     <div id="allList1"><div class="loading">불러오는 중...</div></div>
-  </div>
-
-  <!-- 추석선물세트 오늘 주문 -->
-  <div id="panel-2-0" class="content" style="display:none">
-    <div class="stats-grid" id="statsGrid2"></div>
-    <button class="refresh-btn" style="background:#fce4ec;color:#c62828;" onclick="loadOrders(2)">↻ 새로고침</button>
-    <div class="section-title">오늘 주문 목록</div>
-    <div id="todayList2"><div class="loading">불러오는 중...</div></div>
-  </div>
-
-  <!-- 추석선물세트 전체 주문 -->
-  <div id="panel-2-1" class="content" style="display:none">
-    <button class="refresh-btn" style="background:#fce4ec;color:#c62828;" onclick="loadOrders(2)">↻ 새로고침</button>
-    <div class="section-title">전체 주문 내역</div>
-    <div id="allList2"><div class="loading">불러오는 중...</div></div>
   </div>
 </div>
 
@@ -187,12 +171,11 @@
 const API_KEY = 'AIzaSyBI8B9zk2kKdi9cZX3HHZXNKZr_48WtvQ8';
 const SHEET_IDS = [
   '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q',
-  '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q',
   '1z5LuGsy8UOVphz2_HfCaJCwHnTqPY3nEpowxzG_lP3Q'
 ];
-const BRAND_NAMES = ['팔팔청과', '성심당', '추석선물세트'];
+const BRAND_NAMES = ['팔팔청과', '추석선물세트'];
 const PASSWORD = '515300';
-let allOrders = [[], [], []];
+let allOrders = [[], []];
 let currentBrand = 0;
 let currentSub = 0;
 
@@ -267,7 +250,6 @@ function initMain() {
     `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
   loadOrders(0);
   loadOrders(1);
-  loadOrders(2);
 }
 
 function switchBrand(brand) {
@@ -276,7 +258,6 @@ function switchBrand(brand) {
     t.classList.remove('active-green', 'active-orange', 'active-red');
     if (i === brand) {
       if (brand === 0) t.classList.add('active-green');
-      else if (brand === 1) t.classList.add('active-orange');
       else t.classList.add('active-red');
     }
   });
@@ -290,7 +271,7 @@ function switchSub(sub) {
 }
 
 function updatePanels() {
-  for (let b = 0; b < 3; b++) {
+  for (let b = 0; b < 2; b++) {
     for (let s = 0; s < 2; s++) {
       const panel = document.getElementById(`panel-${b}-${s}`);
       if (panel) panel.style.display = (b === currentBrand && s === currentSub) ? 'block' : 'none';
@@ -301,7 +282,7 @@ function updatePanels() {
 async function loadOrders(brand) {
   document.getElementById(`todayList${brand}`).innerHTML = '<div class="loading">불러오는 중...</div>';
   document.getElementById(`allList${brand}`).innerHTML = '<div class="loading">불러오는 중...</div>';
-  const sheetTab = brand === 1 ? '성심당' : brand === 2 ? '추석선물세트' : '시트1';
+  const sheetTab = brand === 1 ? '추석선물세트' : '시트1';
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_IDS[brand]}/values/${sheetTab}!A2:I99999?key=${API_KEY}`;
   try {
     const res = await fetch(url);
