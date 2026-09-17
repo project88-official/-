@@ -186,7 +186,7 @@ function printReceipt(idx, brand) {
   const o = allOrders[brand].find(o => o.idx === idx);
   if (!o) return;
 
-  const brandLabel = brand === 1 ? '성심당 공구' : '팔팔청과';
+  const brandLabel = brand === 1 ? '추석선물세트' : '팔팔청과';
   const itemLines = o.items.split(',').map(i => `<div style="margin:1mm 0;">• ${i.trim()}</div>`).join('');
   const addrRow = o.method === '배송'
     ? `<tr><td>주&nbsp;&nbsp;소</td><td>${o.addrOrPickup}</td></tr>`
