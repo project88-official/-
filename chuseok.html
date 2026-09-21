@@ -453,7 +453,7 @@ function getTotal() {
 }
 
 function getDeliveryFee() {
-  if (selectedMethod !== 'parcel') return 0;
+  return 0;
   // LA갈비 제외한 품목 수량 합계
   const totalQty = products.reduce((sum, p, i) => {
     if (p.name.includes('LA갈비') || p.name.includes('LA 갈비')) return sum;
@@ -482,9 +482,8 @@ function updateTotal() {
 function selectMethod(m) {
   selectedMethod = m;
   document.getElementById('method-delivery').classList.toggle('active', m === 'delivery');
-  document.getElementById('method-parcel').classList.toggle('active', m === 'parcel');
   document.getElementById('method-pickup').classList.toggle('active', m === 'pickup');
-  document.getElementById('addressField').style.display = (m === 'delivery' || m === 'parcel') ? 'block' : 'none';
+  document.getElementById('addressField').style.display = m === 'delivery' ? 'block' : 'none';
   document.getElementById('pickupTimeField').style.display = m === 'pickup' ? 'block' : 'none';
   document.getElementById('recipientSection').style.display = m === 'pickup' ? 'none' : 'block';
   updateTotal();
@@ -505,10 +504,10 @@ function updateOrderBtn() {
   const recipientName = document.getElementById('recipientName').value.trim();
   const recipientPhone = document.getElementById('recipientPhone').value.trim();
   const recipientAddress = document.getElementById('recipientAddress').value.trim();
-  const needRecipient = selectedMethod === 'delivery' || selectedMethod === 'parcel';
+  const needRecipient = selectedMethod === 'delivery';
   let ok = getTotal() > 0 && selectedMethod && selectedPayment && name && phone;
   if (needRecipient) ok = ok && !!addr && !!recipientName && !!recipientPhone && !!recipientAddress;
-  if (selectedMethod === 'delivery' || selectedMethod === 'parcel') ok = ok && !!addr;
+  if (selectedMethod === 'delivery') ok = ok && !!addr;
   document.getElementById('orderBtn').disabled = !ok;
 }
 
@@ -578,7 +577,7 @@ async function submitOrder() {
     .filter(p => p.qty > 0);
 
   const itemSummary = items.map(i => `${i.name}×${i.qty}`).join(', ');
-  const methodText = selectedMethod === 'delivery' ? '배송' : selectedMethod === 'parcel' ? '택배' : '픽업';
+  const methodText = selectedMethod === 'delivery' ? '배송' : '픽업';
   const payText = selectedPayment === 'card' ? '카드결제' : selectedPayment === 'seoul' ? '서울페이' : '계좌이체';
   const dateStr = now.toLocaleDateString('ko-KR') + ' ' + now.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
 
