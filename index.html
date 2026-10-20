@@ -580,7 +580,7 @@ document.getElementById('todayDate').textContent =
 // Google Sheets에서 품목 불러오기
 // =====================
 async function loadProducts() {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID_PRODUCTS}/values/시트1!A2:F100?key=${API_KEY}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID_PRODUCTS}/values/시트1!A2:F500?key=${API_KEY}`;
   try {
     const res = await fetch(url);
     const data = await res.json();
